@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Call Hero — Monday Morning</title>
+<style>
+:root{
+  --bg:#F5F7FB; --card:#fff; --ink:#14213D; --muted:#6A7689; --line:#E1E6EE;
+  --navy:#102342; --blue:#2467D1; --blue2:#EAF2FF; --red:#C63A2B; --red2:#FDE8E4;
+  --amber:#B45E00; --amber2:#FFF0DC; --green:#137A51; --green2:#E6F5EE;
+  --yellow:#8D6B00; --yellow2:#FFF7D6; --shadow:0 14px 40px rgba(20,33,61,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button{font:inherit;cursor:pointer}
+.app{max-width:1460px;margin:0 auto;padding:24px}
+.top{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:40px;height:40px;border-radius:13px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:800}
+.brand h1{margin:0;font-size:19px}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.top-actions{display:flex;gap:8px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:11px;font-weight:700}
+.dot{width:7px;height:7px;border-radius:50%;background:#1BA86A}
+
+.summary{
+  background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
+  padding:14px 16px;margin-bottom:18px
+}
+.summary-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.summary-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.summary-title{font-weight:800;font-size:13px;margin-right:2px}
+.stat{display:flex;align-items:baseline;gap:5px;background:#F7F9FC;border-radius:10px;padding:8px 10px}
+.stat b{font-size:17px}.stat span{font-size:10px;color:var(--muted)}
+.stat.alert{background:var(--amber2)} .stat.alert b{color:var(--amber)}
+.summary-btn{border:0;background:var(--navy);color:#fff;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:800}
+.brief{display:none;margin-top:11px;padding-top:11px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.brief.show{display:block}
+.brief strong{color:var(--ink)}
+
+.layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(350px,.8fr);gap:18px;align-items:start}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+.card-head{padding:18px 20px 14px;border-bottom:1px solid var(--line);display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.card-head h2{margin:0;font-size:18px}.card-head p{margin:4px 0 0;color:var(--muted);font-size:11px}
+.progress{font-size:11px;font-weight:800;color:var(--blue)}
+.card-body{padding:18px 20px}
+
+.next{
+  border:1px solid #C8DAF8;background:linear-gradient(135deg,#F7FAFF,#EEF5FF);
+  border-radius:16px;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px
+}
+.next small{display:block;color:var(--blue);font-weight:900;letter-spacing:.09em;text-transform:uppercase;font-size:9px}
+.next strong{display:block;font-size:15px;margin-top:3px}
+.next span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.primary{border:0;background:var(--navy);color:#fff;padding:9px 11px;border-radius:9px;font-size:10px;font-weight:800}
+.ghost{border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 10px;border-radius:9px;font-size:10px;font-weight:800}
+
+.timeline-wrap{border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.timeline-top{
+  display:grid;grid-template-columns:72px 1fr;background:#F8FAFD;border-bottom:1px solid var(--line)
+}
+.timeline-top div{padding:9px 12px;font-size:10px;font-weight:800;color:var(--muted)}
+.timeline{
+  display:grid;grid-template-columns:72px 1fr;position:relative
+}
+.time{
+  border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  min-height:92px;padding:14px 10px;text-align:center;color:var(--muted);font-size:11px;font-weight:700;background:#FBFCFE
+}
+.slot{
+  min-height:92px;border-bottom:1px solid var(--line);padding:10px 12px;position:relative;background:#fff
+}
+.time:last-of-type,.slot:last-child{border-bottom:0}
+.event{
+  height:100%;border-radius:13px;padding:10px 11px;border:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:flex-start
+}
+.event.red{background:#FFF8F6;border-color:#F2C2BA}
+.event.amber{background:#FFF9F0;border-color:#F2D7B7}
+.event.blue{background:#F6F9FF;border-color:#C5D8F7}
+.event.soft{background:#F8FAFD}
+.event.yellow{background:#FFFDF5;border-color:#EAE0B9}
+.event-title{display:flex;gap:8px;align-items:flex-start}
+.icon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#fff;border:1px solid rgba(0,0,0,.04);flex:0 0 auto}
+.event h3{margin:0;font-size:12px}
+.event p{margin:3px 0 0;color:var(--muted);font-size:10px;line-height:1.35}
+.tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
+.tag{font-size:8.5px;font-weight:800;padding:4px 6px;border-radius:999px;background:#F1F3F6;color:#5E6878}
+.tag.red{background:var(--red2);color:var(--red)}.tag.amber{background:var(--amber2);color:var(--amber)}.tag.blue{background:var(--blue2);color:var(--blue)}
+.event-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.event-actions button{padding:7px 8px;border-radius:8px;font-size:9px;font-weight:800}
+.event-actions .go{border:0;background:var(--navy);color:#fff}
+.event-actions .alt{border:1px solid var(--line);background:#fff}
+.done{opacity:.5}.done .event{background:#F7FBF8;border-color:#D7E9DF}
+.done .event h3:after{content:"  ✓";color:var(--green)}
+
+.other{margin-top:16px}
+.other-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.other-head h3{margin:0;font-size:12px}.other-head span{font-size:10px;color:var(--muted)}
+.other-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.other-card{border:1px solid var(--line);border-radius:12px;padding:10px}
+.other-card strong{display:block;font-size:10.5px}.other-card span{display:block;color:var(--muted);font-size:9px;margin-top:4px;line-height:1.3}
+.other-card button{margin-top:8px}
+
+.check{
+  margin-top:14px;border:1px solid #E7D7B8;background:#FFF9EE;border-radius:13px;padding:11px 12px;
+  display:flex;justify-content:space-between;gap:10px;align-items:center
+}
+.check strong{font-size:10.5px}.check p{margin:3px 0 0;font-size:9px;color:#796A50}
+.conflicts{display:none;margin-top:8px;font-size:9px;line-height:1.45;color:#75613C}.conflicts.show{display:block}
+
+.jade{background:linear-gradient(180deg,#102342,#17335D);color:#fff}
+.jade .card-head{border-color:rgba(255,255,255,.08)}
+.jade .card-head p{color:#AEC0D9}.jade .progress{color:#BBD2F6}
+.voice{margin-bottom:12px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.055);border-radius:15px;padding:13px}
+.voice-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.orb{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#9CC5FF 0 9%,#3B80EA 28%,#173F7C 58%,#0E1D35 100%);box-shadow:0 0 28px rgba(71,132,229,.28)}
+.wave{display:flex;align-items:center;gap:3px;height:22px}
+.wave i{width:3px;border-radius:999px;background:#86B6FF;animation:w 1s infinite ease-in-out}.wave i:nth-child(1){height:7px}.wave i:nth-child(2){height:17px;animation-delay:.1s}.wave i:nth-child(3){height:22px;animation-delay:.2s}.wave i:nth-child(4){height:12px;animation-delay:.3s}.wave i:nth-child(5){height:18px;animation-delay:.4s}
+@keyframes w{50%{transform:scaleY(.4);opacity:.55}}
+.voice strong{display:block;font-size:12px;margin-top:10px}.voice span{display:block;color:#C0D0E5;font-size:9.5px;margin-top:3px}
+.voice button{margin-top:10px;border:0;background:#fff;color:var(--navy);border-radius:9px;padding:8px 10px;font-size:9.5px;font-weight:800}
+
+.auto-title{display:flex;justify-content:space-between;margin:4px 0 8px}.auto-title strong{font-size:11px}.auto-title span{font-size:9px;color:#9FB3D0}
+.msg{background:#fff;color:var(--ink);border-radius:13px;padding:10px;margin-bottom:8px}
+.msg-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.msg h4{margin:0;font-size:10.5px}.msg small{font-size:8.5px;color:var(--muted)}
+.draft{margin-top:7px;background:#F5F7FA;border-radius:9px;padding:8px;font-size:9px;color:#46536A;line-height:1.4;min-height:42px}
+.msg-actions{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+.msg-actions button{padding:6px 7px;border-radius:7px;font-size:8.5px;font-weight:800}
+.send{border:0;background:var(--blue);color:#fff}.edit,.hear{border:1px solid var(--line);background:#fff}
+.human{border:1px dashed rgba(255,255,255,.18);border-radius:12px;padding:10px;color:#CAD7E8;font-size:9px;line-height:1.35;margin-top:8px}
+.human strong{color:#fff}
+.ask{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)}
+.ask strong{font-size:10px}.quick{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
+.quick button{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#D1DDEC;border-radius:999px;padding:6px 7px;font-size:8px}
+.answer{margin-top:8px;font-size:8.8px;color:#BACBE0;line-height:1.4;min-height:26px}
+
+.toast{position:fixed;right:22px;bottom:22px;background:#102342;color:#fff;border-radius:10px;padding:10px 12px;font-size:10px;box-shadow:var(--shadow);opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+@media(max-width:1050px){.layout{grid-template-columns:1fr}.other-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){.app{padding:12px}.top-actions{display:none}.summary-left{display:grid;grid-template-columns:1fr 1fr;width:100%}.summary-title{grid-column:1/-1}.timeline{grid-template-columns:58px 1fr}.timeline-top{grid-template-columns:58px 1fr}.other-grid{grid-template-columns:1fr}.event{display:block}.event-actions{margin-top:8px;justify-content:flex-start}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">CH</div>
+      <div><h1>Call Hero</h1><p>Harbourside Dental · Monday · 8:00 AM</p></div>
+    </div>
+    <div class="top-actions">
+      <span class="pill"><span class="dot"></span>Jade online</span>
+      <span class="pill" id="progressTop">0 / 7 cleared</span>
+      <span class="pill">First patient 8:30</span>
+    </div>
+  </header>
+
+  <section class="summary">
+    <div class="summary-row">
+      <div class="summary-left">
+        <span class="summary-title">Monday summary</span>
+        <span class="stat"><b>31</b><span>calls</span></span>
+        <span class="stat"><b>26</b><span>callers</span></span>
+        <span class="stat"><b>24</b><span>handled</span></span>
+        <span class="stat alert"><b>7</b><span>need you</span></span>
+        <span class="stat alert"><b>3</b><span>Jade checks</span></span>
+      </div>
+      <button class="summary-btn" id="summaryBtn">View 15-sec brief</button>
+    </div>
+    <div class="brief" id="brief"><strong>Jade’s brief:</strong> Peter and Michael need a human first. A 9:00 AM slot can be recovered. Routine replies for Grace, Rachel, Daniel and David are ready to approve.</div>
+  </section>
+
+  <main class="layout">
+    <section class="card">
+      <div class="card-head">
+        <div><h2>Your morning</h2><p>Only time-sensitive items and actions that need you.</p></div>
+        <div class="progress" id="progressLeft">0 of 7 cleared</div>
+      </div>
+      <div class="card-body">
+        <div class="next">
+          <div><small>Next best action</small><strong id="nextTitle">Call Peter Young</strong><span id="nextText">Urgent overnight pain · human review first.</span></div>
+          <button class="primary" id="nextBtn">Start →</button>
+        </div>
+
+        <div class="timeline-wrap">
+          <div class="timeline-top"><div>Time</div><div>Monday morning</div></div>
+          <div class="timeline">
+            <div class="time">8:00</div>
+            <div class="slot" data-task="Peter">
+              <div class="event red">
+                <div>
+                  <div class="event-title"><div class="icon">🚨</div><div><h3>Peter Young 😟</h3><p>Significant pain overnight · flagged for Monday</p></div></div>
+                  <div class="tags"><span class="tag red">URGENT</span><span class="tag">Clinical</span><span class="tag">Unresolved</span></div>
+                </div>
+                <div class="event-actions"><button class="go completeBtn">Call now</button><button class="alt">View summary</button></div>
+              </div>
+            </div>
+
+            <div class="time">8:15</div>
+            <div class="slot" data-task="Michael">
+              <div class="event amber">
+                <div>
+                  <div class="event-title"><div class="icon">⚠️</div><div><h3>Michael Brown 😟</h3><p>2 calls merged · billing complaint · callback overdue</p></div></div>
+                  <div class="tags"><span class="tag amber">HIGH</span><span class="tag">2 calls merged</span><span class="tag">Complaint</span></div>
+                </div>
+                <div class="event-actions"><button class="go completeBtn">Call patient</button><button class="alt">Assign manager</button></div>
+              </div>
+            </div>
+
+            <div class="time">8:30</div>
+            <div class="slot">
+              <div class="event soft">
+                <div class="event-title"><div class="icon">🦷</div><div><h3>First patient / walk-in</h3><p>Your normal clinic day starts here.</p></div></div>
+              </div>
+            </div>
+
+            <div class="time">9:00</div>
+            <div class="slot" data-task="Grace">
+              <div class="event blue">
+                <div>
+                  <div class="event-title"><div class="icon">✨</div><div><h3>Open slot opportunity</h3><p>Grace 92% fit · David 81% fit</p></div></div>
+                  <div class="tags"><span class="tag blue">WAITLIST</span><span class="tag blue">LOST-OPPORTUNITY RECOVERY</span></div>
+                </div>
+                <div class="event-actions"><button class="go" id="matchBtn">Offer Grace</button><button class="alt">Compare</button></div>
+              </div>
+            </div>
+
+            <div class="time">10:00</div>
+            <div class="slot" data-task="Rachel">
+              <div class="event">
+                <div class="event-title"><div class="icon">🟠</div><div><h3>Rachel Lewis 😐</h3><p>Requested callback to rebook</p></div></div>
+                <div class="event-actions"><button class="alt completeBtn">Handled</button></div>
+              </div>
+            </div>
+
+            <div class="time">10:30</div>
+            <div class="slot" data-task="Daniel">
+              <div class="event yellow">
+                <div class="event-title"><div class="icon">🟡</div><div><h3>Daniel Clark 😐</h3><p>Orthodontic referral promised</p></div></div>
+                <div class="event-actions"><button class="alt completeBtn">Handled</button></div>
+              </div>
+            </div>
+
+            <div class="time">11:00</div>
+            <div class="slot" data-task="James">
+              <div class="event">
+                <div class="event-title"><div class="icon">🟡</div><div><h3>James Anderson 😐</h3><p>Callback number appears incomplete</p></div></div>
+                <div class="event-actions"><button class="alt completeBtn">Review</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="other">
+          <div class="other-head"><h3>Other attention items</h3><span>Lower urgency</span></div>
+          <div class="other-grid">
+            <div class="other-card" data-task="Natalie"><strong>🟡 Natalie Evans 😐</strong><span>Cancelled · said she’ll call back to rebook</span><button class="ghost completeBtn">Acknowledge</button></div>
+            <div class="other-card"><strong>🔁 Chris Martin</strong><span>3 calls stitched · eventually booked · no action</span></div>
+            <div class="other-card"><strong>✅ Sarah Johnson</strong><span>Cancelled then rebooked · resolved thread hidden</span></div>
+          </div>
+        </div>
+
+        <div class="check">
+          <div><strong>⚠️ Jade check: 3 possible scheduling conflicts</strong><p>Appointments appear outside stated Mon–Fri clinic hours.</p><div class="conflicts" id="conflicts">Jessica Wilson — Sat 21 Nov · Andrew Green — Sat 21 Nov · Laura Thomas — Sun 22 Nov</div></div>
+          <button class="ghost" id="checkBtn">Review</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card jade">
+      <div class="card-head">
+        <div><h2>Jade Messages</h2><p>One-click patient replies — you approve before send.</p></div>
+        <div class="progress">4 ready</div>
+      </div>
+      <div class="card-body">
+        <div class="voice">
+          <div class="voice-row"><div class="orb"></div><div class="wave"><i></i><i></i><i></i><i></i><i></i></div></div>
+          <strong>Morning voice brief</strong><span>Peter + Michael need a human. The routine replies below can be automated.</span>
+          <button id="voiceBtn">▶ Play 15-sec brief</button>
+        </div>
+
+        <div class="auto-title"><strong>Suggested replies</strong><span>Editable</span></div>
+
+        <div class="msg">
+          <div class="msg-head"><div><h4>✨ Grace Scott</h4><small>Earlier slot · 😟</small></div><span class="tag blue">92% fit</span></div>
+          <div class="draft" contenteditable="true">Hi Grace, an earlier appointment has opened at 9:00 AM today. Would you like us to reserve it for you?</div>
+          <div class="msg-actions"><button class="hear">▶ Hear</button><button class="edit">Edit</button><button class="send">Send</button></div>
+        </div>
+
+        <div class="msg">
+          <div class="msg-head"><div><h4>🟠 Rachel Lewis</h4><small>Rebooking · 😐</small></div><span class="tag">Callback requested</span></div>
+          <div class="draft" contenteditable="true">Hi Rachel, we noted that you’d like to rebook. Reply here and we’ll help find a suitable time.</div>
+          <div class="msg-actions"><button class="hear">▶ Hear</button><button class="edit">Edit</button><button class="send">Send</button></div>
+        </div>
+
+        <div class="msg">
+          <div class="msg-head"><div><h4>🟡 Daniel Clark</h4><small>Referral · 😐</small></div><span class="tag">Promised</span></div>
+          <div class="draft" contenteditable="true">Hi Daniel, as discussed with Jade, we don’t offer orthodontics. We can send you our recommended referral options.</div>
+          <div class="msg-actions"><button class="hear">▶ Hear</button><button class="edit">Edit</button><button class="send">Send</button></div>
+        </div>
+
+        <div class="msg">
+          <div class="msg-head"><div><h4>🟠 David Miller</h4><small>Recovery · 😟</small></div><span class="tag amber">At risk</span></div>
+          <div class="draft" contenteditable="true">Hi David, an appointment has opened this morning. If you’re still looking for a slot this week, reply YES and we’ll help arrange it.</div>
+          <div class="msg-actions"><button class="hear">▶ Hear</button><button class="edit">Edit</button><button class="send">Send</button></div>
+        </div>
+
+        <div class="human"><strong>Human-only:</strong> Jade will not auto-send for Peter’s urgent clinical issue or Michael’s escalating complaint.</div>
+
+        <div class="ask">
+          <strong>Ask Jade</strong>
+          <div class="quick">
+            <button data-answer="Peter first — urgent overnight pain and time sensitivity.">Who first?</button>
+            <button data-answer="Grace is the strongest fit: two attempts, waitlist request, unresolved need.">Why Grace?</button>
+            <button data-answer="I found three likely out-of-hours bookings and merged repeat calls into one patient thread.">Any mistakes?</button>
+          </div>
+          <div class="answer" id="answer">Choose a question.</div>
+        </div>
+      </div>
+    </aside>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(()=> {
+  const toast=document.getElementById('toast');
+  const notify=t=>{toast.textContent=t;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1500)}
+  const done=new Set();
+  const order=[
+    ['Peter','Call Peter Young','Urgent overnight pain · human review first.'],
+    ['Michael','Call Michael Brown','Repeat complaint · callback overdue.'],
+    ['Grace','Fill the 9:00 opening','Grace is the best current match.'],
+    ['Rachel','Follow up Rachel','Requested a callback to rebook.'],
+    ['Daniel','Send Daniel’s referral','Referral was promised by Jade.'],
+    ['James','Review James’s contact','Callback number may be incomplete.'],
+    ['Natalie','Acknowledge Natalie','Lower-urgency cancellation follow-up.']
+  ];
+  function update(){
+    document.getElementById('progressTop').textContent=done.size+' / 7 cleared';
+    document.getElementById('progressLeft').textContent=done.size+' of 7 cleared';
+    const n=order.find(x=>!done.has(x[0]));
+    if(n){nextTitle.textContent=n[1];nextText.textContent=n[2];nextBtn.textContent='Start →'}
+    else{nextTitle.textContent='Ready for your first patient ✓';nextText.textContent='Priority queue cleared.';nextBtn.textContent='Ready'}
+  }
+  document.querySelectorAll('.completeBtn').forEach(b=>b.onclick=()=>{
+    const h=b.closest('[data-task]'); if(!h)return;
+    done.add(h.dataset.task);h.classList.add('done');b.textContent='✓ Done';b.disabled=true;update();notify(h.dataset.task+' cleared')
+  });
+  matchBtn.onclick=()=>{done.add('Grace');document.querySelector('[data-task="Grace"]').classList.add('done');update();notify('Grace selected for 9:00')};
+  nextBtn.onclick=()=>{
+    const n=order.find(x=>!done.has(x[0])); if(!n)return notify('All priority items cleared');
+    const el=document.querySelector('[data-task="'+n[0]+'"]'); if(el)el.scrollIntoView({behavior:'smooth',block:'center'})
+  };
+  summaryBtn.onclick=()=>brief.classList.toggle('show');
+  checkBtn.onclick=()=>conflicts.classList.toggle('show');
+  const speak=t=>{
+    if(!('speechSynthesis'in window))return notify('Audio unavailable');
+    speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=.98;speechSynthesis.speak(u)
+  };
+  const script="Good morning Rebecca. Peter and Michael need your attention first. A nine AM slot can be recovered, and four routine patient replies are ready for your approval.";
+  voiceBtn.onclick=()=>speak(script);
+  document.querySelectorAll('.msg').forEach(m=>{
+    const d=m.querySelector('.draft');
+    m.querySelector('.hear').onclick=()=>speak(d.innerText);
+    m.querySelector('.edit').onclick=()=>{d.focus();notify('Draft ready to edit')};
+    m.querySelector('.send').onclick=e=>{e.currentTarget.textContent='✓ Sent';e.currentTarget.disabled=true;e.currentTarget.style.background='var(--green)';notify('Message approved')}
+  });
+  document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>answer.textContent=b.dataset.answer);
+  update();
+})();
+</script>
+</body>
+</html>
