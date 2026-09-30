@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getCallbackTime, getProgress } from '../../data/activity'
+import { getCallbackTime } from '../../data/activity'
 import { dayName } from '../../data/format'
 import { useDashboard } from '../../state/useDashboard'
 import type { ActionItem } from '../../types/dashboard'
@@ -23,7 +23,7 @@ export function BookPanel({ action }: { action: ActionItem }) {
   return (
     <section className="rounded-xl border border-slate-200 p-3.5">
       <h3 className="text-xs font-bold">📅 Book</h3>
-      {getProgress(action) === 'booked' && mine ? (
+      {mine ? (
         <p className="mt-2 rounded-lg bg-emerald-50 p-2.5 text-[12px] font-bold text-emerald-800">
           ✓ Booked {dayName(mine.date)} {mine.time}
         </p>

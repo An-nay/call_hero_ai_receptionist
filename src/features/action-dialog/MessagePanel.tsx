@@ -27,8 +27,7 @@ export function MessagePanel({
   }
 
   const send = () => {
-    logActivity(action.id, { type: 'callback-booked', time })
-    logActivity(action.id, { type: 'messaged', detail: text })
+    logActivity(action.id, { type: 'messaged', time, detail: text })
   }
 
   return (

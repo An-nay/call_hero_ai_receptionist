@@ -15,7 +15,7 @@ export interface ActivityEntry {
   id: string
   type: ActivityType
   at: string
-  /** Callback time (HH:MM) for 'callback-booked'. */
+  /** Callback time (HH:MM) for 'callback-booked' or a 'messaged' proposal. */
   time?: string
   /** Opening id for 'appointment-booked'. */
   slotId?: string
