@@ -1,4 +1,5 @@
 import { Icon } from '../../components/Icon'
+import { isDone } from '../../data/activity'
 import { buildSummary } from '../../data/buildSummary'
 import { useDashboard } from '../../state/useDashboard'
 
@@ -14,11 +15,17 @@ export function SummaryBar() {
   const { data, actions } = useDashboard()
   const summary = buildSummary(data, actions)
 
+  const done = actions.filter(isDone).length
+  const urgentLeft = actions.filter(
+    (item) => !isDone(item) && item.priority !== 'normal',
+  ).length
+
   const stats = [
     { label: 'calls', value: summary.calls },
     { label: 'callers', value: summary.callers },
-    { label: 'handled', value: summary.handled },
-    { label: 'need you', value: summary.needYou, alert: true },
+    { label: 'handled by Jade', value: summary.handled },
+    { label: 'tasks done', value: `${done} / ${actions.length}` },
+    { label: 'urgent + high left', value: urgentLeft, alert: true },
     { label: 'Jade checks', value: summary.outOfHours.length, alert: true },
   ]
 

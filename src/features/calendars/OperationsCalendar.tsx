@@ -159,27 +159,6 @@ export function OperationsCalendar() {
   const d = sel
   const today = d === clock.day
 
-  const todayTasks = tasks.filter(
-    (t) =>
-      (done[t.id] && done[t.id].day === clock.day) ||
-      planned.where[t.id]?.day === clock.day,
-  )
-  const doneToday = tasks.filter((t) => done[t.id]?.day === clock.day).length
-  const pending = Object.values(planned.hours[clock.day] ?? {}).flat()
-  const urgentLeft = pending.filter((x) => x.t.pri <= 2).length
-  const rolled = tasks.filter(
-    (t) =>
-      !done[t.id] &&
-      planned.where[t.id] &&
-      planned.where[t.id].day > clock.day &&
-      t.due <= clock.day,
-  ).length
-  const stats: [string | number, string][] = [
-    [`${doneToday} / ${todayTasks.length}`, 'tasks done today'],
-    [urgentLeft, 'urgent + high tasks left'],
-    [rolled, 'rolled to a later day'],
-  ]
-
   const dayFirst = Object.values(planned.hours[d] ?? {})
     .flat()
     .sort((a, b) => a.start - b.start)[0]?.t
@@ -490,15 +469,6 @@ export function OperationsCalendar() {
               </button>
             </div>
           )}
-
-          <div className="stats">
-            {stats.map(([value, label]) => (
-              <div className="st" key={label}>
-                <b>{value}</b>
-                <span>{label}</span>
-              </div>
-            ))}
-          </div>
 
           <details className="pass">
             <summary>
