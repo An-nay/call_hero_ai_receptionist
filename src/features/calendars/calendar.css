@@ -920,3 +920,76 @@
 .cal-root tr.row.open:hover td {
   background: var(--bb);
 }
+
+/* ---------- layout: only the lists scroll, never the controls ---------- */
+.cal-root .main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+.cal-root .tabs,
+.cal-root .pass,
+.cal-root .legend,
+.cal-root .days {
+  flex-shrink: 0;
+}
+.cal-root .pass > div {
+  max-height: 30vh;
+  overflow-y: auto;
+}
+.cal-root .col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.cal-root .col .ch {
+  flex-shrink: 0;
+}
+.cal-root .col .grid {
+  max-height: 65vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b9cdd6 transparent;
+}
+.cal-root .col .grid:focus-visible {
+  outline: 2px solid var(--b);
+  outline-offset: 2px;
+}
+.cal-root .tblpage {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+.cal-root .tblpage .wrap {
+  flex: 1;
+  min-height: 0;
+  max-height: 65vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.cal-root .tblpage thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
+  box-shadow: 0 1px 0 var(--line);
+}
+@media (min-width: 1024px) {
+  .cal-root .twocal {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+  }
+  .cal-root .col .grid,
+  .cal-root .tblpage .wrap {
+    flex: 1;
+    max-height: none;
+  }
+}
+.cal-root .foot {
+  padding-right: 72px;
+}

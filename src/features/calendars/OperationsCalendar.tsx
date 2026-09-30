@@ -292,7 +292,7 @@ export function OperationsCalendar() {
   })
 
   return (
-    <section className="cal-root rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_14px_40px_rgba(20,33,61,.08)]">
+    <section className="cal-root flex min-h-0 flex-1 flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_14px_40px_rgba(20,33,61,.08)]">
       <div className="tabs" role="tablist">
         <button
           type="button"
@@ -315,7 +315,9 @@ export function OperationsCalendar() {
       </div>
 
       {tab === 'tbl' ? (
-        <EveryCaller />
+        <div className="flex min-h-0 flex-1 flex-col">
+          <EveryCaller />
+        </div>
       ) : (
         <div className="main">
           <details className="pass">
@@ -343,8 +345,8 @@ export function OperationsCalendar() {
             <span className="lg k-g">Booking (fixed)</span>
             {(Object.entries(MOOD) as [Mood, (typeof MOOD)[Mood]][]).map(
               ([mood, m]) => (
-                <span className="mlg" key={m.label}>
-                  <MoodFace mood={mood} /> <b>{m.label}</b>: {m.tip}
+                <span className="mlg" key={m.label} title={m.tip}>
+                  <MoodFace mood={mood} /> <b>{m.label}</b>
                 </span>
               ),
             )}
@@ -359,13 +361,25 @@ export function OperationsCalendar() {
               <h2 className="ch">
                 Bookings<small>fixed, never moves</small>
               </h2>
-              <div className="grid">{staticHours}</div>
+              <div
+                className="grid"
+                role="region"
+                aria-label="Bookings for the selected day"
+                tabIndex={0}
+              >
+                {staticHours}
+              </div>
             </div>
             <div className="col">
               <h2 className="ch">
                 Task plan<small>live, reshuffles as she works</small>
               </h2>
-              <div className="grid">
+              <div
+                className="grid"
+                role="region"
+                aria-label="Task plan for the selected day"
+                tabIndex={0}
+              >
                 {!isOpen(d) && (
                   <div className="closedmsg">
                     Clinic closed. No tasks are scheduled on {wd(d)}.

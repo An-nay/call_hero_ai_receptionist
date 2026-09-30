@@ -26,8 +26,8 @@ function DialogBody({ action }: { action: ActionItem }) {
   const progress = getProgress(action)
 
   return (
-    <div>
-      <div className="border-b border-line/60 p-5">
+    <div className="flex max-h-[92vh] flex-col">
+      <div className="shrink-0 border-b border-line/60 p-5">
         <div className="flex items-start justify-between gap-3">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-brand">
             {action.category.replace('-', ' ')} · {action.estimatedMinutes} min
@@ -46,7 +46,7 @@ function DialogBody({ action }: { action: ActionItem }) {
         </div>
       </div>
 
-      <div className="space-y-4 p-5">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-5">
         <div className="rounded-xl bg-brand-soft p-3.5">
           <p className="text-[10px] font-extrabold uppercase tracking-wide text-brand">
             Recommended next step
@@ -95,7 +95,7 @@ function DialogBody({ action }: { action: ActionItem }) {
         <ActivityLog action={action} />
       </div>
 
-      <div className="flex justify-end gap-3 border-t border-line/60 p-4">
+      <div className="flex shrink-0 justify-end gap-3 border-t border-line/60 p-4">
         <button
           type="button"
           onClick={() => selectAction(null)}
@@ -130,7 +130,7 @@ export function ActionDialog() {
     <dialog
       ref={dialogRef}
       onClose={() => selectAction(null)}
-      className="m-auto max-h-[92vh] w-[min(94vw,880px)] overflow-y-auto rounded-3xl bg-white p-0 text-slate-900 shadow-[0_24px_60px_rgba(11,60,79,.28)] backdrop:bg-slate-950/40 max-sm:mb-0 max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none"
+      className="m-auto max-h-[92vh] w-[min(94vw,880px)] overflow-hidden rounded-3xl bg-white p-0 text-slate-900 shadow-[0_24px_60px_rgba(11,60,79,.28)] backdrop:bg-slate-950/40 max-sm:mb-0 max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none"
     >
       {selectedAction && (
         <DialogBody key={selectedAction.id} action={selectedAction} />

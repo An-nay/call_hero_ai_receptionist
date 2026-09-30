@@ -8,7 +8,7 @@ import { MOOD } from './engine/tasks'
 export function EveryCaller() {
   const { actions, selectAction } = useDashboard()
   return (
-    <>
+    <div className="tblpage">
       <div className="legend">
         {(Object.entries(MOOD) as [Mood, (typeof MOOD)[Mood]][]).map(
           ([mood, m]) => (
@@ -18,7 +18,12 @@ export function EveryCaller() {
           ),
         )}
       </div>
-      <div className="wrap">
+      <div
+        className="wrap"
+        role="region"
+        aria-label="Every caller"
+        tabIndex={0}
+      >
         <table>
           <thead>
             <tr>
@@ -90,6 +95,6 @@ export function EveryCaller() {
         which is why Kevin Turner is "Not urgent". Weekdays follow the dates in
         the call data.
       </div>
-    </>
+    </div>
   )
 }
