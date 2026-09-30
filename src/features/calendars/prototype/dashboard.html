@@ -58,6 +58,13 @@ tr.row td:first-child{box-shadow:inset 4px 0 0 var(--c)}
 .btn{background:var(--nb);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-weight:600;font-size:13px}
 .btn.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .sp{flex:1}
+.toprow{display:flex;justify-content:flex-end;margin-bottom:6px}
+.pass{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;margin-bottom:10px}
+.pass summary{cursor:pointer;font-weight:600}
+.pass ul{margin:8px 0 2px;padding-left:18px}
+.pass li{margin:4px 0;font-size:13px}
+.pass .ok{color:var(--g)}
+.card.block{background:transparent;border-style:dashed;border-left-style:solid;border-left-color:var(--n);color:var(--mute)}
 
 /* stats */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:10px}
@@ -155,7 +162,8 @@ tr.row td:first-child{box-shadow:inset 4px 0 0 var(--c)}
 <!-- ============ CALENDAR ============ -->
 <section id="p-cal" role="tabpanel" aria-labelledby="tab-cal">
  <div class="layout"><div class="main">
-  <div class="clock">
+  <div class="toprow"><button class="btn" id="demoBtn" aria-expanded="false" aria-controls="clock">Demo controls</button></div>
+  <div class="clock hidden" id="clock">
     <span class="t" id="clk">Mon 17 Nov 8:00</span>
     <span class="lbl">Demo clock (simulated)</span>
     <span class="sp"></span>
@@ -166,9 +174,11 @@ tr.row td:first-child{box-shadow:inset 4px 0 0 var(--c)}
     <button class="btn" data-jump="15">+15 min</button>
     <button class="btn" data-jump="60">+1 hour</button>
     <button class="btn" id="nextday">Next day</button>
+    <button class="btn" id="golive">Back to live</button>
     <button class="btn" id="reset">Reset</button>
   </div>
   <div class="stats" id="stats"></div>
+  <details class="pass" id="pass"><summary id="passSum"></summary><div id="passBody"></div></details>
   <div class="legend" id="lg"></div>
   <div class="days" id="days" role="tablist" aria-label="Days"></div>
   <div class="twocal">
@@ -176,8 +186,8 @@ tr.row td:first-child{box-shadow:inset 4px 0 0 var(--c)}
     <div class="col"><h2 class="ch">Task plan<small>live, reshuffles as she works</small></h2><div class="grid" id="grid"></div></div>
   </div>
   <div class="rules">
-    <b>How the day reshuffles.</b> Walk-ins can arrive at any hour, so each hour gets about 30 minutes of tasks (the mark on each hour's bar), highest priority first. Urgent tasks can use the whole hour and High tasks can stretch to 40 minutes, so they are never held back. Tick a task and its time is freed, so later tasks are pulled up. Miss the hour and whatever is left is pushed to the next hour with room. Anything that won't fit before close rolls to the next open day. Bookings are fixed and never move.
-    Task times average about 3 minutes a call and are working estimates (see <code>CATS</code> in the file), not benchmarked averages.
+    <b>How the day reshuffles.</b> The plan follows the real clock (clinic time). Walk-ins can arrive at any hour, so each hour gets about 30 minutes of tasks (the mark on each hour's bar) and the rest of the hour stays free. Urgent tasks can use the whole hour and High tasks can stretch to 40 minutes. Tick a task and its time is freed, so later tasks are pulled up. Let an hour pass and whatever is left moves to the next hour with room, still in priority order. Anything that won't fit before close rolls to the next open day. Tasks skip front-desk blocks (lunch 14:00 to 14:45, a patient arriving, check-in around each booking). Bookings are fixed and never move.
+    <b>Final pass.</b> Before opening, a second layer re-reads the call log, corrects Jade's mistakes and writes the suggestions on the task cards. Task times average about 3 minutes a call and are working estimates (see <code>CATS</code> in the file), not benchmarked averages.
   </div>
  </div>
  <aside class="side" aria-label="Reserved for a later panel">Reserved for the next panel (30%)</aside>
@@ -190,7 +200,7 @@ tr.row td:first-child{box-shadow:inset 4px 0 0 var(--c)}
   <div class="wrap"><table>
   <thead><tr><th>Person</th><th>Mood</th><th style="text-align:center">Calls</th><th>Reason</th><th>What Jade did</th><th>Urgent?</th><th>Booked / review on</th></tr></thead>
   <tbody id="tb"></tbody></table></div>
-  <div class="foot">Clinical detail is summarised as a category on purpose, and phone numbers are on the calendar cards. "Urgent" means it needs action today: an urgent patient, an unanswered repeat complaint, or a priority booking Jade flagged. Everything else is "Not urgent". Weekdays follow the dates in the call data.</div>
+  <div class="foot">Clinical detail is summarised as a category on purpose, and phone numbers are on the calendar cards. "Urgent" means it needs action today: an urgent patient or an unanswered repeat complaint. Jade's own "priority" flags are re-checked by the final pass, which is why Kevin Turner is now "Not urgent". Everything else is "Not urgent". Weekdays follow the dates in the call data.</div>
 </section>
 </div>
 
@@ -232,82 +242,189 @@ const CATS={
    The more important a task, the further it may stretch that budget (P1 can use the whole hour). */
 const CEIL={1:60,2:40,3:30,4:30}, BUDGET=30;
 
-/* ---------- phone numbers (from the call log) ----------
-   James Anderson: this is the caller ID he rang from, not the number he gave, which was one digit short. */
-const PHONE={"Peter Young":"+61452008914","Michael Brown":"+61421665338","Kevin Turner":"+61447290163","Grace Scott":"+61429104778",
- "David Miller":"+61438902114","Chris Martin":"+61477283019","James Anderson":"+61491775206","Laura Thomas":"+61402118644",
- "Daniel Clark":"+61434920651","Sophie Wright":"+61417550284","Natalie Evans":"+61435662119","Rachel Lewis":"+61425887140",
- "John Smith":"+61412887301","Emily Davis":"+61403771842","Jessica Wilson":"+61407449183","Andrew Green":"+61414778203",
- "Olivia King":"+61406229773","Emma Hall":"+61419663288","Sarah Johnson":"+61498220156","Hannah Moore":"+61402883517"};
+/* ---------- the call log ----------
+   weekend-calls.json is embedded so this file opens anywhere. Bookings, phone numbers, moods and tasks
+   below are all derived from it. */
+const DATA={"clinic":{"name":"Harbourside Dental","suburb":"Balmain","state":"NSW","practitioners":["Dr Rebecca Foster","Dr Mark Bennett"],"business_hours":"Mon-Fri 8:00-17:00, closed weekends","recording_enabled":true},"period":{"label":"Weekend of 14-17 November 2026","from":"2026-11-14T17:00:00+11:00","to":"2026-11-17T08:00:00+11:00","note":"Clinic closed from Friday 5pm. This is everything Jade handled while nobody was there."},"calls":[{"id":"c001","started_at":"2026-11-14T17:04:22+11:00","duration_seconds":94,"caller_number":"+61412887301","caller_name":"John Smith","outcome":"booked","intent":"new_patient","summary":"New patient, wants a check-up and clean. Mentioned he hasn't been to a dentist in about four years.","appointment":{"date":"2026-11-19","time":"14:30","type":"Check-up and clean","practitioner":"Dr Rebecca Foster"},"recording_available":true,"sentiment":"positive"},{"id":"c002","started_at":"2026-11-14T17:41:08+11:00","duration_seconds":38,"caller_number":"+61498220156","caller_name":"Sarah Johnson","outcome":"cancelled","intent":"cancellation","summary":"Cancelled Monday 9:00am appointment. Work conflict. Did not rebook.","appointment":{"date":"2026-11-17","time":"09:00","type":"Check-up","practitioner":"Dr Rebecca Foster","action":"cancelled"},"recording_available":true,"sentiment":"neutral"},{"id":"c003","started_at":"2026-11-14T18:12:55+11:00","duration_seconds":61,"caller_number":"+61403771842","caller_name":"Emily Davis","outcome":"booked","intent":"new_patient","summary":"New patient. Moved to the area recently, looking for a regular dentist.","appointment":{"date":"2026-11-20","time":"10:00","type":"New patient exam","practitioner":"Dr Mark Bennett"},"recording_available":true,"sentiment":"positive"},{"id":"c004","started_at":"2026-11-14T19:33:17+11:00","duration_seconds":22,"caller_number":"+61455019927","caller_name":null,"outcome":"hung_up","intent":"unknown","summary":"Caller hung up shortly after Jade's greeting. No information captured.","appointment":null,"recording_available":true,"sentiment":"neutral"},{"id":"c005","started_at":"2026-11-14T20:07:44+11:00","duration_seconds":118,"caller_number":"+61421665338","caller_name":"Michael Brown","outcome":"message_taken","intent":"billing_query","summary":"Disputing an invoice from his last visit. Says he was charged for a service he didn't receive. Wants a callback from the practice manager.","appointment":null,"recording_available":true,"sentiment":"negative","flagged":"complaint"},{"id":"c006","started_at":"2026-11-14T21:19:02+11:00","duration_seconds":47,"caller_number":"+61407449183","caller_name":"Jessica Wilson","outcome":"booked","intent":"existing_patient","summary":"Existing patient, wants to bring her six-month check-up forward.","appointment":{"date":"2026-11-21","time":"16:00","type":"Check-up and clean","practitioner":"Dr Rebecca Foster"},"recording_available":true,"sentiment":"positive"},{"id":"c007","started_at":"2026-11-15T08:22:39+11:00","duration_seconds":73,"caller_number":"+61438902114","caller_name":"David Miller","outcome":"no_availability","intent":"new_patient","summary":"Wanted an appointment this coming week. Nothing suitable available. Said he would 'try somewhere else' before ending the call.","appointment":null,"recording_available":true,"sentiment":"negative","flagged":"lost_opportunity"},{"id":"c008","started_at":"2026-11-15T09:15:51+11:00","duration_seconds":29,"caller_number":"+61466330887","caller_name":"Amanda Taylor","outcome":"question_answered","intent":"clinic_question","summary":"Asked about parking. Jade confirmed street parking and the Wilson car park two doors down.","appointment":null,"recording_available":true,"sentiment":"positive"},{"id":"c009","started_at":"2026-11-15T09:47:13+11:00","duration_seconds":52,"caller_number":"+61491775206","caller_name":"James Anderson","outcome":"failed_callback_number","intent":"new_patient","summary":"Wanted to book a first appointment. Provided a callback number that appears to be one digit short — captured as 041277520. Could not confirm before the call dropped.","appointment":null,"recording_available":true,"sentiment":"neutral","flagged":"bad_data"},{"id":"c010","started_at":"2026-11-15T10:33:28+11:00","duration_seconds":88,"caller_number":"+61402118644","caller_name":"Laura Thomas","outcome":"booked","intent":"new_patient","summary":"New patient. Asked whether the clinic does children's appointments — confirmed yes. Booking for her son.","appointment":{"date":"2026-11-22","time":"09:30","type":"Children's check-up","practitioner":"Dr Mark Bennett"},"recording_available":true,"sentiment":"positive"},{"id":"c011","started_at":"2026-11-15T11:02:09+11:00","duration_seconds":41,"caller_number":"+61477283019","caller_name":"Chris Martin","outcome":"no_availability","intent":"new_patient","summary":"First attempt. Asked for anything available Monday or Tuesday. Nothing suitable. Said he would call back.","appointment":null,"recording_available":true,"sentiment":"neutral","repeat_caller":true},{"id":"c012","started_at":"2026-11-15T11:58:44+11:00","duration_seconds":19,"caller_number":"+61413556722","caller_name":null,"outcome":"wrong_number","intent":"unknown","summary":"Caller was trying to reach a veterinary clinic. Wrong number.","appointment":null,"recording_available":true,"sentiment":"neutral"},{"id":"c013","started_at":"2026-11-15T13:24:36+11:00","duration_seconds":66,"caller_number":"+61477283019","caller_name":"Chris Martin","outcome":"no_availability","intent":"new_patient","summary":"Second attempt. Asked again about Monday or Tuesday availability. Still nothing suitable. Audibly frustrated.","appointment":null,"recording_available":true,"sentiment":"negative","repeat_caller":true},{"id":"c014","started_at":"2026-11-15T14:11:57+11:00","duration_seconds":103,"caller_number":"+61434920651","caller_name":"Daniel Clark","outcome":"message_taken","intent":"out_of_scope","summary":"Asked about orthodontic treatment and clear aligners. The clinic does not offer orthodontics. Jade took a message and suggested the practice would call back with a referral.","appointment":null,"recording_available":true,"sentiment":"neutral","flagged":"service_not_offered"},{"id":"c015","started_at":"2026-11-15T15:40:22+11:00","duration_seconds":57,"caller_number":"+61425887140","caller_name":"Rachel Lewis","outcome":"cancelled","intent":"cancellation","summary":"Cancelled Tuesday 11:00am. Family emergency. Asked to be called to rebook next week.","appointment":{"date":"2026-11-18","time":"11:00","type":"Check-up and clean","practitioner":"Dr Rebecca Foster","action":"cancelled"},"recording_available":true,"sentiment":"neutral","flagged":"rebook_requested"},{"id":"c016","started_at":"2026-11-15T16:52:08+11:00","duration_seconds":34,"caller_number":"+61408117395","caller_name":"Matthew Walker","outcome":"question_answered","intent":"clinic_question","summary":"Asked whether the clinic accepts HCF. Jade confirmed yes and that HICAPS is available on site.","appointment":null,"recording_available":true,"sentiment":"positive"},{"id":"c017","started_at":"2026-11-15T18:29:41+11:00","duration_seconds":79,"caller_number":"+61477283019","caller_name":"Chris Martin","outcome":"booked","intent":"new_patient","summary":"Third attempt. Accepted a Thursday afternoon slot after being unable to get Monday or Tuesday twice earlier today.","appointment":{"date":"2026-11-20","time":"15:30","type":"New patient exam","practitioner":"Dr Rebecca Foster"},"recording_available":true,"sentiment":"neutral","repeat_caller":true},{"id":"c018","started_at":"2026-11-15T20:14:03+11:00","duration_seconds":45,"caller_number":"+61419663288","caller_name":"Emma Hall","outcome":"booked","intent":"existing_patient","summary":"Existing patient booking a routine clean.","appointment":{"date":"2026-11-25","time":"08:30","type":"Clean","practitioner":"Dr Mark Bennett"},"recording_available":true,"sentiment":"positive"},{"id":"c019","started_at":"2026-11-16T02:14:37+11:00","duration_seconds":126,"caller_number":"+61452008914","caller_name":"Peter Young","outcome":"urgent_flagged","intent":"urgent","summary":"Called at 2:14am in significant pain. Jade advised that for a genuine emergency he should attend an emergency department, took his details, and flagged the call as urgent for first thing Monday.","appointment":null,"recording_available":true,"sentiment":"negative","flagged":"urgent"},{"id":"c020","started_at":"2026-11-16T08:41:19+11:00","duration_seconds":62,"caller_number":"+61406229773","caller_name":"Olivia King","outcome":"booked","intent":"new_patient","summary":"New patient, referred by an existing patient. Wants a check-up and to discuss whitening.","appointment":{"date":"2026-11-24","time":"11:00","type":"New patient exam","practitioner":"Dr Rebecca Foster"},"recording_available":true,"sentiment":"positive"},{"id":"c021","started_at":"2026-11-16T09:33:55+11:00","duration_seconds":27,"caller_number":"+61443891026","caller_name":null,"outcome":"hung_up","intent":"unknown","summary":"Hung up during Jade's greeting. Nothing captured.","appointment":null,"recording_available":true,"sentiment":"neutral"},{"id":"c022","started_at":"2026-11-16T10:18:42+11:00","duration_seconds":95,"caller_number":"+61417550284","caller_name":"Sophie Wright","outcome":"booked","intent":"new_patient","summary":"New patient. Nervous about dental visits, asked whether the practice is good with anxious patients. Jade confirmed and noted the concern.","appointment":{"date":"2026-11-26","time":"13:00","type":"New patient exam","practitioner":"Dr Mark Bennett"},"recording_available":true,"sentiment":"positive","flagged":"note_for_practitioner"},{"id":"c023","started_at":"2026-11-16T11:05:13+11:00","duration_seconds":33,"caller_number":"+61498220156","caller_name":"Sarah Johnson","outcome":"booked","intent":"existing_patient","summary":"Rebooking the Monday appointment she cancelled on Friday evening.","appointment":{"date":"2026-11-27","time":"09:00","type":"Check-up","practitioner":"Dr Rebecca Foster"},"recording_available":true,"sentiment":"positive"},{"id":"c024","started_at":"2026-11-16T12:47:29+11:00","duration_seconds":71,"caller_number":"+61429104778","caller_name":"Grace Scott","outcome":"no_availability","intent":"new_patient","summary":"First attempt. Wanted an appointment before the end of the month. Nothing available that suited.","appointment":null,"recording_available":true,"sentiment":"neutral","repeat_caller":true},{"id":"c025","started_at":"2026-11-16T14:22:06+11:00","duration_seconds":49,"caller_number":"+61461337920","caller_name":"Ryan Baker","outcome":"question_answered","intent":"clinic_question","summary":"Asked about the gap fee for a check-up and clean with HCF cover. Jade gave the standard fee and explained the gap depends on individual cover.","appointment":null,"recording_available":true,"sentiment":"positive"},{"id":"c026","started_at":"2026-11-16T15:58:51+11:00","duration_seconds":84,"caller_number":"+61429104778","caller_name":"Grace Scott","outcome":"no_availability","intent":"new_patient","summary":"Second attempt, three hours after the first. Same request. Still nothing available. Asked whether there was a waiting list — Jade took her details.","appointment":null,"recording_available":true,"sentiment":"negative","repeat_caller":true,"flagged":"waitlist_requested"},{"id":"c027","started_at":"2026-11-16T17:11:34+11:00","duration_seconds":56,"caller_number":"+61414778203","caller_name":"Andrew Green","outcome":"booked","intent":"existing_patient","summary":"Existing patient rescheduling from Wednesday to Friday.","appointment":{"date":"2026-11-21","time":"10:30","type":"Check-up","practitioner":"Dr Rebecca Foster","action":"rescheduled"},"recording_available":true,"sentiment":"positive"},{"id":"c028","started_at":"2026-11-16T19:04:17+11:00","duration_seconds":31,"caller_number":"+61435662119","caller_name":"Natalie Evans","outcome":"cancelled","intent":"cancellation","summary":"Cancelled Thursday 14:00. Travelling for work. Will call back to rebook.","appointment":{"date":"2026-11-20","time":"14:00","type":"Clean","practitioner":"Dr Mark Bennett","action":"cancelled"},"recording_available":true,"sentiment":"neutral"},{"id":"c029","started_at":"2026-11-16T20:38:02+11:00","duration_seconds":67,"caller_number":"+61447290163","caller_name":"Kevin Turner","outcome":"booked","intent":"new_patient","summary":"New patient. Chipped a tooth on the weekend, not painful but wants it looked at.","appointment":{"date":"2026-11-18","time":"08:00","type":"Emergency assessment","practitioner":"Dr Rebecca Foster"},"recording_available":true,"sentiment":"neutral","flagged":"priority"},{"id":"c030","started_at":"2026-11-17T06:52:44+11:00","duration_seconds":43,"caller_number":"+61402883517","caller_name":"Hannah Moore","outcome":"booked","intent":"existing_patient","summary":"Existing patient, routine booking before work.","appointment":{"date":"2026-12-02","time":"17:00","type":"Check-up and clean","practitioner":"Dr Mark Bennett"},"recording_available":true,"sentiment":"positive"},{"id":"c031","started_at":"2026-11-17T07:52:11+11:00","duration_seconds":58,"caller_number":"+61421665338","caller_name":"Michael Brown","outcome":"message_taken","intent":"billing_query","summary":"Second call about the same invoice dispute. Has not received a callback since Friday evening. Increasingly frustrated.","appointment":null,"recording_available":true,"sentiment":"negative","flagged":"complaint","repeat_caller":true}]};
+const CALLS=DATA.calls;
+const dayIdx=iso=>Math.round((Date.UTC(+iso.slice(0,4),+iso.slice(5,7)-1,+iso.slice(8,10))-DAY0)/864e5);
+const callAbs=c=>dayIdx(c.started_at)*1440+Number(c.started_at.slice(11,13))*60+Number(c.started_at.slice(14,16));
+const callsOf=n=>CALLS.filter(c=>c.caller_name===n);
+const ids=n=>callsOf(n).map(c=>c.id).join(", ");
+const slug=n=>n.split(" ")[0].toLowerCase();
+/* James Anderson: this is the caller ID he rang from; the number he gave was too short. */
+const PHONE={};CALLS.forEach(c=>{if(c.caller_name&&!PHONE[c.caller_name])PHONE[c.caller_name]=c.caller_number});
 const tel=n=>{const p=PHONE[n];if(!p)return "";const l="0"+p.slice(3);
  return `<a class="tel" href="tel:${p}" title="Call ${n}">📞 ${l.slice(0,4)} ${l.slice(4,7)} ${l.slice(7)}</a>`};
 
-/* ---------- bookings (fixed) ---------- */
-const APPTS=[
- {who:"Kevin Turner",mood:"normal",day:NOV(18),time:"08:00",type:"Emergency assessment",prac:"Dr Foster"},
- {who:"John Smith",mood:"casual",day:NOV(19),time:"14:30",type:"Check-up and clean",prac:"Dr Foster"},
- {who:"Emily Davis",mood:"casual",day:NOV(20),time:"10:00",type:"New patient exam",prac:"Dr Bennett"},
- {who:"Chris Martin",mood:"nicer",day:NOV(20),time:"15:30",type:"New patient exam",prac:"Dr Foster"},
- {who:"Andrew Green",mood:"casual",day:NOV(21),time:"10:30",type:"Check-up",prac:"Dr Foster"},
- {who:"Jessica Wilson",mood:"casual",day:NOV(21),time:"16:00",type:"Check-up and clean",prac:"Dr Foster"},
- {who:"Laura Thomas",mood:"casual",day:NOV(22),time:"09:30",type:"Children's check-up",prac:"Dr Bennett",warn:"Clinic is closed on this day",noRemind:true},
- {who:"Olivia King",mood:"casual",day:NOV(24),time:"11:00",type:"New patient exam",prac:"Dr Foster"},
- {who:"Emma Hall",mood:"casual",day:NOV(25),time:"08:30",type:"Clean",prac:"Dr Bennett"},
- {who:"Sophie Wright",mood:"nicer",day:NOV(26),time:"13:00",type:"New patient exam",prac:"Dr Bennett",note:"Anxious patient"},
- {who:"Sarah Johnson",mood:"casual",day:NOV(27),time:"09:00",type:"Check-up",prac:"Dr Foster"},
- {who:"Hannah Moore",mood:"casual",day:DEC(2),time:"17:00",type:"Check-up and clean",prac:"Dr Bennett",note:"At closing time"},
- /* cancelled: slot is free */
- {who:"Sarah Johnson",mood:"casual",day:NOV(17),time:"09:00",type:"Check-up",prac:"Dr Foster",cancelled:true},
- {who:"Rachel Lewis",mood:"nicer",day:NOV(18),time:"11:00",type:"Check-up and clean",prac:"Dr Foster",cancelled:true},
- {who:"Natalie Evans",mood:"normal",day:NOV(20),time:"14:00",type:"Clean",prac:"Dr Bennett",cancelled:true}];
+/* mood: Nicer if anything negative or flagged as sensitive, Casual if their latest call was positive, else Normal */
+const NICER_FLAGS=["urgent","complaint","lost_opportunity","note_for_practitioner","rebook_requested","waitlist_requested"];
+const moodOf=n=>{const cs=callsOf(n).sort((a,b)=>callAbs(a)-callAbs(b));if(!cs.length)return "normal";
+ if(cs.some(c=>c.sentiment==="negative"||NICER_FLAGS.includes(c.flagged)))return "nicer";
+ return cs[cs.length-1].sentiment==="positive"?"casual":"normal"};
 
-/* ---------- receptionist tasks (from the calls) ---------- */
-const BASE=[
- {id:"peter",who:"Peter Young",mood:"nicer",cat:"triage",pri:1,due:0,text:"Check on his pain and offer the earliest emergency slot. Mon 9:00 with Dr Foster is free after a cancellation.",call:"c019"},
- {id:"michael",who:"Michael Brown",mood:"nicer",cat:"complaint",pri:1,due:0,text:"Call back about the invoice dispute. He has called twice and heard nothing since Friday. Apologise first.",call:"c005, c031"},
- {id:"kevin",who:"Kevin Turner",mood:"normal",cat:"confirm",pri:1,due:0,text:"Confirm his emergency assessment tomorrow 8:00 (Dr Foster) and check the chipped tooth hasn't got worse.",call:"c029"},
- {id:"grace",who:"Grace Scott",mood:"nicer",cat:"offer",pri:2,due:0,text:"Offer Thu 20 14:00 with Dr Bennett (freed by a cancellation) and add her to the waitlist. Called twice, frustrated.",call:"c024, c026"},
- {id:"david",who:"David Miller",mood:"nicer",cat:"winback",pri:2,due:0,text:"Lost lead who said he'd try elsewhere. Offer Tue 18 11:00 or Thu 20 14:00 before he books somewhere else.",call:"c007"},
- {id:"chris",who:"Chris Martin",mood:"nicer",cat:"offer",pri:2,due:0,text:"Booked Thu 20 15:30 after three calls. Apologise, confirm, and offer Tue 18 11:00 if he still wants Mon or Tue.",call:"c011, c013, c017"},
- {id:"james",who:"James Anderson",mood:"normal",cat:"datafix",pri:2,due:0,text:"The number he gave was one digit short. Call or text the number he rang from, confirm it, book his first visit.",call:"c009"},
- {id:"laura",who:"Laura Thomas",mood:"casual",cat:"bookfix",pri:2,due:0,text:"Her son's check-up is booked for Sat 22 Nov 9:30, a closed day. Call to move it to a weekday.",call:"c010"},
- {id:"daniel",who:"Daniel Clark",mood:"normal",cat:"referral",pri:3,due:0,text:"We don't offer orthodontics. Call back with a local orthodontist referral, as Jade promised.",call:"c014"},
- {id:"sophie",who:"Sophie Wright",mood:"nicer",cat:"note",pri:3,due:0,text:"Add the anxious-patient note to her chart for Dr Bennett before Wed 26 13:00.",call:"c022"},
- {id:"natalie",who:"Natalie Evans",mood:"normal",cat:"release",pri:4,due:0,text:"Release her cancelled Thu 20 14:00 slot to the waitlist if Grace or David haven't taken it.",call:"c028"},
- {id:"rachel",who:"Rachel Lewis",mood:"nicer",cat:"rebook",pri:3,due:NOV(24),text:"Call to rebook her cancelled Tue 18 11:00. Family emergency, so be gentle and don't rush.",call:"c015"}];
+/* ---------- bookings (fixed) ---------- */
+const hhmm=m=>`${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`;
+const shortPrac=p=>p.replace(/^Dr \w+ /,"Dr ");
+const APPTS=CALLS.filter(c=>c.appointment).map(c=>{const a=c.appointment;return {
+ cid:c.id,who:c.caller_name,mood:moodOf(c.caller_name),day:dayIdx(a.date+"T00:00:00"),time:a.time,type:a.type,
+ prac:shortPrac(a.practitioner),cancelled:a.action==="cancelled",madeAt:callAbs(c),
+ note:c.flagged==="note_for_practitioner"?"Note for practitioner":""}});
+APPTS.forEach(a=>{if(a.cancelled)return;
+ if(!isOpen(a.day))a.warn="Clinic is closed on this day";else if(hm(a.time)+30>CLOSE)a.warn="Starts at closing time"});
+const BOOKED=APPTS.filter(a=>!a.cancelled);
+const sameSlot=(a,b)=>a.day===b.day&&a.prac===b.prac&&Math.abs(hm(a.time)-hm(b.time))<30;
+const slotAbs=s=>s.day*1440+hm(s.time);
+const slotTxt=s=>`${dlabel(s.day)} ${s.time} with ${s.prac}`;
+/* cancelled slots nobody has taken: the only openings the log can prove */
+const FREED=APPTS.filter(a=>a.cancelled&&!BOOKED.some(b=>sameSlot(b,a)));
 const prevOpen=d=>{d--;while(d>0&&!isOpen(d))d--;return Math.max(d,0)};
-const REMIND=APPTS.filter(a=>!a.cancelled&&!a.noRemind&&a.who!=="Kevin Turner").map(a=>({
- id:"rem-"+a.who.split(" ")[0].toLowerCase(),who:a.who,mood:a.mood,cat:"remind",pri:4,due:prevOpen(a.day),
- text:`Send a reminder for ${a.time} ${a.type} on ${dlabel(a.day)} (${a.prac}).`,call:""}));
-const TASKS=[...BASE,...REMIND].map((t,i)=>({...t,min:t.min||CATS[t.cat].min,ord:i}));
-const BY=Object.fromEntries(TASKS.map(t=>[t.id,t]));
+
+/* front-desk time no task may use: lunch (14:00 to 14:45), the first patient arriving (from the brief) and check-in around each booking */
+function blocksFor(d){
+  if(!isOpen(d))return [];
+  const b=BOOKED.filter(a=>a.day===d).map(a=>({start:hm(a.time)-5,end:hm(a.time)+5,label:`Check-in: ${a.who}`}));
+  b.push({start:840,end:885,label:"Lunch break",lunch:true});
+  if(d===0)b.push({start:510,end:520,label:"First patient arrives (8:30)"});
+  return b.sort((x,y)=>x.start-y.start);
+}
+
+/* ---------- the final pass ----------
+   Runs before opening and re-runs every minute, so it never offers a slot that has already gone.
+   It re-reads the call log, finds Jade's mistakes and writes the corrected tasks. */
+const nowAbs=()=>S.day*1440+Math.floor(S.min);
+/* what each "no availability" caller asked for, read from the call summaries (a live Jade would record this) */
+const WANT={"David Miller":{label:"any time this week",from:0,to:4},"Chris Martin":{label:"Monday or Tuesday",from:0,to:1},"Grace Scott":{label:"any time before the end of the month",from:0,to:13}};
+
+function buildTasks(){
+  const out=[],fixes=[],checks=[],taken=new Set(),claims={};
+  const key=s=>`${s.day}|${s.time}|${s.prac}`;
+  const free=FREED.filter(s=>slotAbs(s)>nowAbs()).sort((a,b)=>slotAbs(a)-slotAbs(b));
+  const claim=(s,who)=>{if(s&&!s.derived){taken.add(key(s));claims[key(s)]=who}return s};
+  const tag=(s,me)=>s.derived?" (not in the booked list, check the diary first)":claims[key(s)]&&claims[key(s)]!==me?` (first offered to ${claims[key(s)].split(" ")[0]})`:" (freed by a cancellation)";
+  const say=(me,f,b)=>f?`Offer ${slotTxt(f)}${tag(f,me)}.${b?` If that doesn't suit: ${slotTxt(b)}${tag(b,me)}.`:""}`:"No free slot is known right now, so add them to the waitlist and check the diary.";
+  const T=(id,who,cat,pri,due,text,x={})=>out.push({id,who,mood:moodOf(who),cat,pri,due,text,call:ids(who),...x});
+  /* unconfirmed openings around a preferred time, same practitioner and time of day */
+  const nearby=o=>{const t0=hm(o.time),t=Math.min(Math.max(t0,OPEN),CLOSE-30),r=[];
+   for(let d=o.minDay;d<=o.ref+10;d++){if(!isOpen(d))continue;
+    const s={day:d,time:hhmm(t),prac:o.prac,derived:true};
+    if(slotAbs(s)<=nowAbs()||BOOKED.some(b=>sameSlot(b,s))||FREED.some(f=>sameSlot(f,s)))continue;
+    r.push({...s,score:Math.abs(d-o.ref)+Math.abs(t-t0)/120})}
+   return r};
+  const best=o=>{const c=nearby(o);
+   free.filter(s=>s.day>=o.minDay&&!taken.has(key(s))).forEach(s=>c.push({...s,score:Math.abs(s.day-o.ref)+Math.abs(hm(s.time)-hm(o.time))/120+(s.prac===o.prac?0:1.5)-.75}));
+   return c.sort((a,b)=>a.score-b.score||a.day-b.day).slice(0,2)};
+
+  /* 1. urgent call that was never booked: first in line for the earliest slot */
+  const urgentNoBooking=CALLS.filter(c=>c.outcome==="urgent_flagged"&&!c.appointment);
+  urgentNoBooking.forEach(c=>{const n=c.caller_name;
+   const f=claim(free.find(s=>!taken.has(key(s))),n),b=free.find(s=>s!==f&&!taken.has(key(s)))||free.find(s=>s!==f);
+   T(slug(n),n,"triage",1,0,`Urgent overnight call and nobody has rung back yet. ${say(n,f,b)}`);
+   fixes.push(`<b>${n}</b> had an urgent call but was never booked. First in line for ${f?slotTxt(f):"the earliest slot (none known, check the diary)"}.`)});
+
+  /* 2. Jade's "priority" flag on a booking whose own note shows no urgency, while a real urgent call had no booking */
+  const overTriaged=CALLS.filter(c=>c.flagged==="priority"&&/not painful/i.test(c.summary));
+  overTriaged.forEach(c=>{const n=c.caller_name,b=BOOKED.find(a=>a.who===n),down=urgentNoBooking.length>0;
+   T(slug(n),n,"confirm",down?3:1,0,`Confirm ${dlabel(b.day)} ${b.time} with ${b.prac}.${down?" The final pass removed Jade's priority flag: nothing in the call suggests urgency, and the urgent call outranks it.":""}`,{exp:slotAbs(b)});
+   if(down)fixes.push(`<b>${n}</b> was flagged priority ahead of the urgent call. Priority flag removed, booking kept.`)});
+
+  /* 3. told "no availability" while cancelled slots were open (mistake 1) */
+  const missed=CALLS.filter(c=>c.outcome==="no_availability");
+  const names=[...new Set(missed.map(c=>c.caller_name))].sort((a,b)=>BOOKED.some(x=>x.who===a)-BOOKED.some(x=>x.who===b));
+  const assigns=[];
+  names.forEach(n=>{
+   const w=WANT[n]||{label:"as soon as possible",from:0,to:13},me=BOOKED.find(a=>a.who===n);
+   const cand=free.filter(s=>s.day>=w.from&&s.day<=w.to);
+   const f=cand.find(s=>!taken.has(key(s))),b=cand.find(s=>s!==f&&!taken.has(key(s)))||cand.find(s=>s!==f);
+   const lost=callsOf(n).some(c=>c.flagged==="lost_opportunity");
+   assigns.push(`${n.split(" ")[0]}: ${f?slotTxt(f):"waitlist"}`);
+   if(!me){
+    T(slug(n),n,lost?"winback":"offer",2,0,`Asked for ${w.label}. `+(f?say(n,claim(f,n),b):cand.length?`Every open slot in that window is already offered to someone else (${cand.map(slotTxt).join(", ")}). Add them to the waitlist and check the diary.`:"No free slot is known in that window. Add them to the waitlist and check the diary."));
+   }else{
+    T(slug(n),n,"offer",3,0,`Asked for ${w.label} ${callsOf(n).length} times before settling on ${dlabel(me.day)} ${me.time}. Apologise and confirm it. `+(f?`Offer ${slotTxt(claim(f,n))}${tag(f,n)} if they still want an earlier slot.`:"The earlier openings are already offered to others."));
+   }});
+  if(missed.length){
+   const open=missed.map(c=>FREED.filter(s=>s.madeAt<callAbs(c)&&slotAbs(s)>callAbs(c)).length);
+   fixes.push(`<b>${names.length} callers</b> (${missed.length} calls) were told there was no availability while up to ${Math.max(...open)} cancelled slots were open. Offers now: ${assigns.join("; ")}.`)}
+
+  /* 4. bookings on a closed day or at closing time (mistakes 6 and 7) */
+  BOOKED.filter(a=>a.warn).forEach(a=>{const closed=a.warn.includes("closed");
+   const [x,y]=best({prac:a.prac,time:a.time,ref:a.day,minDay:0});claim(x,a.who);claim(y,a.who);
+   T(slug(a.who),a.who,"bookfix",closed?2:4,0,`Booked ${dlabel(a.day)} ${a.time}, ${closed?"a day the clinic is closed":"right at closing time"}. ${say(a.who,x,y)}`);
+   fixes.push(`<b>${a.who}</b> was booked ${closed?"on a closed day":"at closing time"} (${dlabel(a.day)} ${a.time}). Two alternatives ready${closed?"":", low priority"}.`)});
+
+  /* 5. cancellations that want to rebook (mistake 10); anyone who already rebooked is left alone */
+  CALLS.filter(c=>c.appointment&&c.appointment.action==="cancelled").forEach(c=>{
+   const n=c.caller_name,a=APPTS.find(x=>x.cid===c.id);
+   if(BOOKED.some(b=>b.who===n&&b.madeAt>a.madeAt)){checks.push(`${n.split(" ")[0]} cancelled and already rebooked`);return}
+   if(!(c.flagged==="rebook_requested"||/call back.*rebook/i.test(c.summary)))return;
+   const due=/next week/i.test(c.summary)?7:0;
+   const orig=due===0?free.find(s=>s.cid===a.cid&&!taken.has(key(s))):null;
+   let f,b;
+   if(orig){f=claim(orig,n);b=best({prac:a.prac,time:a.time,ref:a.day,minDay:0})[0]}
+   else{[f,b]=best({prac:a.prac,time:a.time,ref:due||a.day,minDay:due});claim(f,n)}
+   const t=say(n,f,b);
+   T(slug(n),n,"rebook",4,due,`Cancelled ${dlabel(a.day)} ${a.time} and wants to rebook${due?", and asked for a call next week":""}. `+(orig?t.replace("Offer ","Offer their original slot, "):t));
+   fixes.push(`<b>${n}</b> cancelled and wants to rebook. Low-priority callback${due?" next week, as they asked,":""} with ${orig?"their original slot first":"two alternatives"}.`)});
+
+  /* 6. referral Jade promised for a service the clinic doesn't offer (mistake 10) */
+  CALLS.filter(c=>c.flagged==="service_not_offered").forEach(c=>{const n=c.caller_name,f=n.split(" ")[0];
+   T(slug(n),n,"referral",4,0,`Jade told ${f} the practice would call back with a referral, but the clinic doesn't offer this. Later today, ring a local specialist clinic, ask if they take referrals, and ask them to call ${f} back (number is on this card).`,{after:14*60});
+   fixes.push(`<b>${n}</b> was promised a referral callback. Now a low-priority task after 14:00: call a specialist clinic and ask them to ring back.`)});
+
+  /* everything else from the flags */
+  [...new Set(CALLS.filter(c=>c.flagged==="complaint").map(c=>c.caller_name))].forEach(n=>
+   T(slug(n),n,"complaint",1,0,`Call back about the invoice dispute. ${callsOf(n).length} calls so far and no callback since Friday evening. Apologise first and say when they will hear back.`));
+  CALLS.filter(c=>c.flagged==="bad_data").forEach(c=>{const n=c.caller_name;
+   T(slug(n),n,"datafix",2,0,"The callback number Jade captured is too short and was never read back. Call or text the number they rang from, confirm it, and book their first visit.")});
+  CALLS.filter(c=>c.flagged==="note_for_practitioner").forEach(c=>{const n=c.caller_name,b=BOOKED.find(a=>a.who===n);
+   T(slug(n),n,"note",3,0,`Add the practitioner note to their chart before ${dlabel(b.day)} ${b.time} with ${b.prac}.`)});
+  BOOKED.filter(a=>!a.warn&&!overTriaged.some(c=>c.caller_name===a.who)).forEach(a=>
+   T("rem-"+slug(a.who),a.who,"remind",4,prevOpen(a.day),`Send a reminder for ${a.time} ${a.type} on ${dlabel(a.day)} (${a.prac}).`,{call:"",exp:slotAbs(a)}));
+
+  let dbl=0;BOOKED.forEach((a,i)=>BOOKED.slice(i+1).forEach(b=>{if(sameSlot(a,b))dbl++}));
+  const log=fixes.map(d=>({fix:1,d}));
+  log.push({fix:0,d:`<b>Checked, nothing to fix:</b> ${dbl} double-bookings; ${checks.length?checks.join("; ")+"; ":""}no other bookings outside opening hours.`});
+  return {tasks:out.map((t,i)=>({...t,min:t.min||CATS[t.cat].min,ord:i})),log};
+}
+let TASKS=[],PASS=[];
 
 /* ---------- state ---------- */
-const KEY="callhero.calendar.v1";
-const S={day:0,min:OPEN,speed:0,sel:0,done:{},tags:{},prev:{}};
-try{const j=JSON.parse(localStorage.getItem(KEY)||"null");if(j&&typeof j==="object"){S.day=j.day|0;S.min=+j.min||OPEN;S.sel=j.sel|0;S.done=j.done||{}}}catch(e){}
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({day:S.day,min:S.min,sel:S.sel,done:S.done}))}catch(e){}};
+const KEY="callhero.calendar.v2";
+/* live clock: real time of day in the clinic's timezone, held between opening and closing */
+const sydMin=()=>{const p=new Intl.DateTimeFormat("en-AU",{timeZone:"Australia/Sydney",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(new Date());
+ const g=t=>Number(p.find(x=>x.type===t).value);return g("hour")*60+g("minute")+g("second")/60};
+const liveMin=()=>Math.min(CLOSE,Math.max(OPEN,sydMin()));
+const S={day:0,min:liveMin(),mode:"live",speed:0,sel:0,done:{},tags:{},prev:{}};
+try{const j=JSON.parse(localStorage.getItem(KEY)||"null");if(j&&typeof j==="object"){
+ S.sel=j.sel|0;S.done=j.done||{};if(j.mode==="demo"){S.mode="demo";S.day=j.day|0;S.min=+j.min||OPEN}}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({mode:S.mode,day:S.day,min:S.min,sel:S.sel,done:S.done}))}catch(e){}};
 
 /* ---------- the scheduler ----------
    Walk the open days from today. Each hour bucket has 60 minutes (only what is left of it, for the current hour).
-   Fill it with the highest-priority pending task that still fits the time left and the hour's budget (30 min, stretching by priority); a smaller lower-priority task may take a gap a
-   bigger one can't. What doesn't fit rolls to the next hour, then the next open day. */
+   Fill it with the highest-priority pending task that still fits the time left, the hour's budget (30 min,
+   stretching by priority) and the front-desk blocks; a smaller lower-priority task may take a gap a bigger one can't.
+   What doesn't fit rolls to the next hour, then the next open day. Tasks can wait for an earliest hour (after)
+   or expire (an appointment reminder is pointless once the appointment has started). */
 function plan(){
   const hours={}, where={};
   let pool=TASKS.filter(t=>!S.done[t.id]).sort((a,b)=>a.pri-b.pri||a.due-b.due||a.ord-b.ord);
   const now=Math.floor(S.min);
   for(let d=S.day;d<=LAST&&pool.length;d++){
     if(!isOpen(d))continue;
-    const start=d===S.day?Math.max(now,OPEN):OPEN;
+    const start=d===S.day?Math.max(now,OPEN):OPEN, blocks=blocksFor(d);
+    pool=pool.filter(t=>!t.exp||t.exp>d*1440+start);
     hours[d]={};
     for(let h=Math.floor(start/60);h<CLOSE/60;h++){
       let cur=Math.max(start,h*60);const end=(h+1)*60,list=hours[d][h]=[];
+      const hit=(s,e)=>blocks.some(b=>s<b.end&&e>b.start);
       for(;;){
         const used=list.reduce((n,x)=>n+x.t.min,0);
-        const i=pool.findIndex(t=>t.due<=d&&t.min<=end-cur&&used+t.min<=CEIL[t.pri]);
-        if(i<0)break;
-        const [t]=pool.splice(i,1);
-        list.push({t,start:cur,end:cur+t.min});where[t.id]={day:d,hour:h};cur+=t.min;
+        const i=pool.findIndex(t=>t.due<=d&&(t.after||0)<=h*60&&cur+t.min<=end&&used+t.min<=CEIL[t.pri]&&!hit(cur,cur+t.min));
+        if(i>=0){const [t]=pool.splice(i,1);list.push({t,start:cur,end:cur+t.min});where[t.id]={day:d,hour:h};cur+=t.min;continue}
+        const nb=blocks.find(b=>b.end>cur&&b.start<end);
+        if(!nb)break;
+        cur=Math.max(cur,nb.end);if(cur>=end)break;
       }
     }
   }
@@ -349,7 +466,13 @@ function renderStatic(d){
   return out;
 }
 
+function blockCard(b){
+  return `<div class="card block"><span class="tx"><span class="ln1"><b>${b.label}</b></span>
+   <span class="ln3"><span class="time">${fmt(b.start)}–${fmt(b.end)}</span> · ${b.lunch?"no tasks":"front desk, no tasks here"}</span></span></div>`;
+}
+
 function render(){
+  const built=buildTasks();TASKS=built.tasks;PASS=built.log;
   const P=plan(), now=Math.floor(S.min), d=S.sel, today=d===S.day;
 
   // moved tags: compare hour bucket with the previous plan
@@ -365,6 +488,7 @@ function render(){
   for(const id in S.tags)if(S.tags[id].until<stamp)delete S.tags[id];
 
   $("clk").textContent=`${dlabel(S.day)} ${fmt(now)}`;
+  if(S.mode==="demo")$("clock").classList.remove("hidden");
   $("play").textContent=S.speed?"Pause":"Play";
   $("play").setAttribute("aria-pressed",S.speed?"true":"false");
   document.querySelectorAll("[data-speed]").forEach(b=>b.classList.toggle("on",+b.dataset.speed===S.speed));
@@ -396,24 +520,30 @@ function render(){
   // hour grid
   let html="";
   if(!isOpen(d))html+=`<div class="closedmsg">Clinic closed. No tasks are scheduled on ${wd(d)}.</div>`;
+  const BLK=blocksFor(d);
   const dayFirst=(Object.values(P.hours[d]||{}).flat().sort((a,b)=>a.start-b.start)[0]||{}).t;
   for(let h=8;h<=17;h++){
     const items=[];
     TASKS.filter(t=>S.done[t.id]&&S.done[t.id].day===d&&Math.floor(S.done[t.id].at/60)===h).forEach(t=>items.push({k:S.done[t.id].at,html:taskCard(t,{done:true,day:d,locked:d!==S.day})}));
     const placed=(P.hours[d]&&P.hours[d][h])||[];
     placed.forEach(x=>items.push({k:x.start,html:taskCard(x.t,{day:d,start:x.start,end:x.end,locked:d!==S.day,next:today&&x.t===dayFirst})}));
+    BLK.filter(b=>Math.floor(Math.max(b.start,OPEN)/60)===h).forEach(b=>items.push({k:b.start,html:blockCard(b)}));
     if(h===17&&!items.length)continue;
     if(!isOpen(d)&&!items.length)continue;
     const isNow=today&&h===Math.floor(now/60), past=(d<S.day)||(today&&h<Math.floor(now/60));
     const from=isNow?now:h*60, cap=Math.max(0,(h+1)*60-from), used=placed.reduce((s,x)=>s+x.t.min,0);
     const seg=placed.map(x=>`<i class="k-${PRI[x.t.pri].k}" style="width:${x.t.min/60*100}%"></i>`).join("");
-    const capTxt=h===17?"closing time":!isOpen(d)?"":past?"past":(used>BUDGET?`${used} min planned, urgent work is over the ${BUDGET} min budget`:`${used} of ${BUDGET} min planned · ${Math.min(BUDGET-used,cap)} min kept for walk-ins`);
+    const capTxt=h===17?"closing time":!isOpen(d)?"":past?"past":(()=>{const lunch=BLK.filter(b=>b.lunch).reduce((n,b)=>n+Math.max(0,Math.min(b.end,(h+1)*60)-Math.max(b.start,from)),0);
+      return `${used} min planned · ${Math.max(0,cap-used-lunch)} min free for walk-ins${lunch?` · ${lunch} min lunch`:""}`})();
     items.sort((a,b)=>a.k-b.k);
     html+=`<div class="hr${isNow?" now":""}${past?" past":""}"><div class="hl"><b>${h}:00</b><span class="cap">${capTxt}</span>${h<17&&isOpen(d)&&!past?`<div class="bar">${seg}</div>`:""}</div>
       <div class="hb">${items.length?items.map(i=>i.html).join(""):'<span class="empty">Nothing planned</span>'}</div></div>`;
   }
   $("grid").innerHTML=html;
   $("gridS").innerHTML=renderStatic(d);
+  const nfix=PASS.filter(x=>x.fix).length;
+  $("passSum").textContent=`Final pass, ran before opening: ${nfix} correction${nfix===1?"":"s"} to Jade's work`;
+  $("passBody").innerHTML=`<ul>${PASS.map(x=>`<li class="${x.fix?"":"ok"}">${x.d}</li>`).join("")}</ul>`;
   save();
 }
 
@@ -424,14 +554,19 @@ $("grid").addEventListener("change",e=>{
   render();
 });
 $("days").addEventListener("click",e=>{const b=e.target.closest("[data-day]");if(b){S.sel=+b.dataset.day;render()}});
-$("play").onclick=()=>{S.speed=S.speed?0:5;render()};
-document.querySelectorAll("[data-speed]").forEach(b=>b.onclick=()=>{S.speed=+b.dataset.speed;render()});
-document.querySelectorAll("[data-jump]").forEach(b=>b.onclick=()=>{S.min=Math.min(CLOSE,S.min+ +b.dataset.jump);render()});
-$("nextday").onclick=()=>{let d=S.day+1;while(!isOpen(d))d++;if(d>=DAYS)return;S.day=S.sel=d;S.min=OPEN;S.speed=0;render()};
-$("reset").onclick=()=>{S.day=S.sel=0;S.min=OPEN;S.speed=0;S.done={};S.tags={};S.prev={};render()};
+const demo=()=>{S.mode="demo"};
+$("demoBtn").onclick=()=>{const c=$("clock");c.classList.toggle("hidden");$("demoBtn").setAttribute("aria-expanded",String(!c.classList.contains("hidden")))};
+$("play").onclick=()=>{demo();S.speed=S.speed?0:5;render()};
+document.querySelectorAll("[data-speed]").forEach(b=>b.onclick=()=>{demo();S.speed=+b.dataset.speed;render()});
+document.querySelectorAll("[data-jump]").forEach(b=>b.onclick=()=>{demo();S.min=Math.min(CLOSE,S.min+ +b.dataset.jump);render()});
+$("nextday").onclick=()=>{let d=S.day+1;while(!isOpen(d))d++;if(d>=DAYS)return;demo();S.day=S.sel=d;S.min=OPEN;S.speed=0;render()};
+const goLive=()=>{S.mode="live";S.speed=0;S.day=S.sel=0;S.min=liveMin()};
+$("golive").onclick=()=>{goLive();render()};
+$("reset").onclick=()=>{goLive();S.done={};S.tags={};S.prev={};render()};
 let lastMin=-1;
 setInterval(()=>{
-  if(S.speed&&S.min<CLOSE){S.min=Math.min(CLOSE,S.min+S.speed*0.25);if(S.min>=CLOSE)S.speed=0}
+  if(S.mode==="live")S.min=liveMin();
+  else if(S.speed&&S.min<CLOSE){S.min=Math.min(CLOSE,S.min+S.speed*0.25);if(S.min>=CLOSE)S.speed=0}
   const m=Math.floor(S.min),stale=Object.values(S.tags).some(t=>t.until<Date.now());
   if(m!==lastMin||stale){lastMin=m;render()}
 },250);
@@ -454,28 +589,29 @@ $("mlg").innerHTML=Object.values(MOOD).map(m=>`<span class="mlg">${m.e} <b>${m.l
 /* [person, mood, calls, reason, what Jade did, urgent?, booked / review on] */
 const G=[
 ["r","Urgent",[
-["Peter Young","nicer",1,"Urgent call at 2:14am","Advised emergency department if genuine emergency, took details, flagged for Monday",1,"Review Mon 17 Nov, 8:00 first"],
+["Peter Young","nicer",1,"Urgent call at 2:14am","Advised emergency department if genuine emergency, took details, flagged for Monday",1,"Review Mon 17 Nov, first thing"],
 ["Michael Brown","nicer",2,"Billing dispute (complaint)","Took a message both times. No callback since Friday evening.",1,"Review Mon 17 Nov, today"],
-["Kevin Turner","normal",1,"New patient, weekend issue","Booked emergency assessment with Dr Foster, flagged priority",1,"Booked Tue 18 Nov, 8:00"]]],
+]],
 ["o","Needs a callback or action",[
 ["Grace Scott","nicer",2,"New patient, wants a slot before month end","Nothing available twice, took details for the waitlist",0,"Review Mon 17 Nov"],
 ["David Miller","nicer",1,"New patient, wanted a slot this week","Nothing available. He said he would try somewhere else.",0,"Review Mon 17 Nov"],
-["Rachel Lewis","nicer",1,"Cancelled Tue 11:00 (family emergency)","Cancelled it, noted she wants a call to rebook",0,"Cancelled Tue 18 Nov 11:00. Rebook call Mon 24 Nov"],
-["Natalie Evans","normal",1,"Cancelled Thu 14:00 (travelling)","Cancelled it, she will call back to rebook",0,"Cancelled Thu 20 Nov 14:00. Release slot Mon 17 Nov"],
-["Daniel Clark","normal",1,"Asked about orthodontics (not offered)","Took a message, said the practice will call with a referral",0,"Review Mon 17 Nov"],
+["Rachel Lewis","nicer",1,"Cancelled Tue 11:00 (family emergency)","Cancelled it, noted she wants a call to rebook",0,"Cancelled Tue 18 Nov 11:00. Low-priority rebook call Mon 24 Nov"],
+["Natalie Evans","normal",1,"Cancelled Thu 14:00 (travelling)","Cancelled it, she will call back to rebook",0,"Cancelled Thu 20 Nov 14:00. Low-priority rebook call Mon 17 Nov"],
+["Daniel Clark","normal",1,"Asked about orthodontics (not offered)","Took a message, said the practice will call with a referral",0,"Low priority, after 14:00 Mon 17 Nov"],
 ["James Anderson","normal",1,"New patient wanting a first booking","Captured a number one digit short, call dropped before confirming",0,"Review Mon 17 Nov"]]],
 ["g","Booked or rescheduled",[
 ["John Smith","casual",1,"New patient, check-up and clean","Booked with Dr Foster",0,"Booked Wed 19 Nov, 14:30"],
 ["Sarah Johnson","casual",2,"Cancelled, then rebooked","Cancelled Mon 17 Nov 9:00 on Friday. Rebooked on Monday.",0,"Booked Thu 27 Nov, 9:00"],
 ["Emily Davis","casual",1,"New patient, wants a regular dentist","Booked with Dr Bennett",0,"Booked Thu 20 Nov, 10:00"],
 ["Jessica Wilson","casual",1,"Existing patient, bring check-up forward","Booked with Dr Foster",0,"Booked Fri 21 Nov, 16:00"],
-["Laura Thomas","casual",1,"New patient, children's check-up (her son)","Booked with Dr Bennett",0,"Booked Sat 22 Nov, 9:30 <span class='warn'>⚠ closed day, fix Mon 17 Nov</span>"],
+["Laura Thomas","casual",1,"New patient, children's check-up (her son)","Booked with Dr Bennett",0,"Booked Sat 22 Nov, 9:30 <span class='warn'>⚠ closed day, final pass suggests two alternatives</span>"],
 ["Chris Martin","nicer",3,"New patient, wanted Monday or Tuesday","Nothing available twice, booked on the third call with Dr Foster",0,"Booked Thu 20 Nov, 15:30"],
 ["Emma Hall","casual",1,"Existing patient, routine clean","Booked with Dr Bennett",0,"Booked Tue 25 Nov, 8:30"],
 ["Olivia King","casual",1,"New patient by referral, check-up and whitening","Booked with Dr Foster",0,"Booked Mon 24 Nov, 11:00"],
 ["Sophie Wright","nicer",1,"New patient, note for practitioner","Booked with Dr Bennett and passed the note on",0,"Booked Wed 26 Nov, 13:00. Chart note Mon 17 Nov"],
 ["Andrew Green","casual",1,"Existing patient, reschedule","Moved to Dr Foster's Friday slot",0,"Booked Fri 21 Nov, 10:30"],
-["Hannah Moore","casual",1,"Existing patient, routine booking","Booked with Dr Bennett",0,"Booked Tue 2 Dec, 17:00 (closing time)"]]],
+["Hannah Moore","casual",1,"Existing patient, routine booking","Booked with Dr Bennett",0,"Booked Tue 2 Dec, 17:00 <span class='warn'>⚠ closing time, low-priority fix</span>"],
+["Kevin Turner","normal",1,"New patient, weekend issue","Booked an assessment with Dr Foster and flagged it priority. The final pass removed the flag.",0,"Booked Tue 18 Nov, 8:00"]]],
 ["b","Question answered",[
 ["Amanda Taylor","casual",1,"Parking","Confirmed street parking and the car park two doors down",0,""],
 ["Matthew Walker","casual",1,"Does the clinic accept HCF?","Confirmed yes, HICAPS available on site",0,""],
