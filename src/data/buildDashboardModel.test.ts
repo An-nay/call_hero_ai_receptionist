@@ -23,3 +23,29 @@ describe('dashboard model', () => {
     ).toEqual(['c005', 'c031'])
   })
 })
+
+describe('activity', () => {
+  it('derives progress, calendar and undo from the activity log', async () => {
+    const { getProgress, withoutLastActivity } = await import('./activity')
+    const actions = buildActions(weekendCalls)
+    const grace = actions.find((a) => a.id === 'opening-grace')!
+    expect(getProgress(grace)).toBe('new')
+
+    const booked = {
+      ...grace,
+      activity: [
+        { id: 'a', type: 'messaged' as const, at: '' },
+        {
+          id: 'b',
+          type: 'appointment-booked' as const,
+          at: '',
+          slotId: 'opening-c002',
+        },
+      ],
+    }
+    expect(getProgress(booked)).toBe('booked')
+    const events = buildCalendarEvents(weekendCalls, [booked])
+    expect(events.find((e) => e.id === 'opening-c002')?.title).toBe('Grace S.')
+    expect(getProgress(withoutLastActivity(booked))).toBe('messaged')
+  })
+})

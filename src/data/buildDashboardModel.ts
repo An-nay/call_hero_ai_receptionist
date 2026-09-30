@@ -1,4 +1,5 @@
 import type { CallRecord, WeekendCallsData } from '../types/calls'
+import { getCallbackTime, getOpenings, isDone } from './activity'
 import type { ActionItem, CalendarEvent } from '../types/dashboard'
 
 const getCall = (calls: CallRecord[], id: string) => {
@@ -10,12 +11,15 @@ const getCall = (calls: CallRecord[], id: string) => {
 export function buildActions(data: WeekendCallsData): ActionItem[] {
   const calls = data.calls
   const action = (
-    item: Omit<ActionItem, 'callerName' | 'status'> & { primaryCallId: string },
+    item: Omit<ActionItem, 'callerName' | 'status' | 'activity'> & {
+      primaryCallId: string
+    },
   ): ActionItem => ({
     ...item,
     callerName:
       getCall(calls, item.primaryCallId).caller_name ?? 'Unknown caller',
     status: 'open',
+    activity: [],
   })
 
   return [
@@ -116,26 +120,37 @@ export function buildCalendarEvents(
   data: WeekendCallsData,
   actions: ActionItem[],
 ): CalendarEvent[] {
-  const openings = data.calls
-    .filter((call) => call.appointment?.action === 'cancelled')
-    .map<CalendarEvent>((call) => ({
-      id: `opening-${call.id}`,
+  const openings = getOpenings(data, actions).map<CalendarEvent>((slot) => {
+    const booker = actions.find((item) => item.id === slot.bookedByActionId)
+    return {
+      id: slot.id,
       lane: 'patient',
-      time: call.appointment!.time,
-      title: 'Open appointment',
-      subtitle: call.appointment!.type,
-      tone: 'opening',
-    }))
+      time: slot.time,
+      title: booker ? shortName(booker.callerName) : 'Open appointment',
+      subtitle: booker ? `Booked · ${slot.type}` : slot.type,
+      tone: booker ? 'confirmed' : 'opening',
+      actionId: booker?.id,
+    }
+  })
 
   const tasks = actions.map<CalendarEvent>((item) => ({
     id: `task-${item.id}`,
     lane: 'front-desk',
-    time: item.suggestedTime,
+    time: getCallbackTime(item) ?? item.suggestedTime,
     title: item.title,
     subtitle: `${item.estimatedMinutes} min · ${item.callerName}`,
-    tone: item.priority === 'critical' ? 'critical' : 'task',
+    tone: isDone(item)
+      ? 'completed'
+      : item.priority === 'critical'
+        ? 'critical'
+        : 'task',
     actionId: item.id,
   }))
 
   return [...openings, ...tasks]
+}
+
+function shortName(name: string) {
+  const [first, last] = name.split(' ')
+  return last ? `${first} ${last[0]}.` : first
 }
