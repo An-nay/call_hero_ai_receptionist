@@ -1,0 +1,2795 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Monday Morning Screen</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f3f5f9;
+        --card: #fff;
+        --ink: #14213d;
+        --mute: #5b6577;
+        --line: #dde2ea;
+        --r: #c62f1a;
+        --rb: #fde3de;
+        --o: #b85a00;
+        --ob: #fdeed9;
+        --g: #0f7d4f;
+        --gb: #e0f3e8;
+        --b: #1e63c9;
+        --bb: #e3edfd;
+        --n: #5b6577;
+        --nb: #eceff4;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --bg: #0d1420;
+          --card: #152033;
+          --ink: #e8edf6;
+          --mute: #9aa6ba;
+          --line: #26344d;
+          --r: #ff8f7a;
+          --rb: #43201b;
+          --o: #ffb257;
+          --ob: #3f2c12;
+          --g: #5fd39c;
+          --gb: #12362a;
+          --b: #8db8ff;
+          --bb: #1a2d4d;
+          --n: #9aa6ba;
+          --nb: #1d2a40;
+        }
+      }
+      :root[data-theme='dark'] {
+        --bg: #0d1420;
+        --card: #152033;
+        --ink: #e8edf6;
+        --mute: #9aa6ba;
+        --line: #26344d;
+        --r: #ff8f7a;
+        --rb: #43201b;
+        --o: #ffb257;
+        --ob: #3f2c12;
+        --g: #5fd39c;
+        --gb: #12362a;
+        --b: #8db8ff;
+        --bb: #1a2d4d;
+        --n: #9aa6ba;
+        --nb: #1d2a40;
+      }
+      html {
+        scroll-padding-top: env(safe-area-inset-top, 0px);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          14px/1.4 Figtree,
+          system-ui,
+          sans-serif;
+      }
+      .page {
+        max-width: 1560px;
+        margin: 0 auto;
+        padding: 22px 20px 28px;
+      }
+      h1 {
+        font:
+          700 28px/1.1 'Bricolage Grotesque',
+          Figtree,
+          system-ui,
+          sans-serif;
+        margin: 0;
+      }
+      .sub {
+        color: var(--mute);
+        margin: 4px 0 14px;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      button:focus-visible,
+      input:focus-visible + .box {
+        outline: 2px solid var(--b);
+        outline-offset: 2px;
+      }
+
+      /* tabs */
+      .tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+      .tab {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        padding: 7px 14px;
+        font-weight: 600;
+      }
+      .tab[aria-selected='true'] {
+        background: var(--ink);
+        color: var(--bg);
+        border-color: var(--ink);
+      }
+
+      /* shared colour keys */
+      .k-r {
+        --c: var(--r);
+        --cb: var(--rb);
+      }
+      .k-o {
+        --c: var(--o);
+        --cb: var(--ob);
+      }
+      .k-g {
+        --c: var(--g);
+        --cb: var(--gb);
+      }
+      .k-b {
+        --c: var(--b);
+        --cb: var(--bb);
+      }
+      .k-n {
+        --c: var(--n);
+        --cb: var(--nb);
+      }
+      .pill {
+        display: inline-block;
+        padding: 1px 9px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .pill.p,
+      .lg {
+        background: var(--cb);
+        color: var(--c);
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+        align-items: center;
+      }
+      .lg {
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .mlg {
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        background: var(--card);
+        border: 1px solid var(--line);
+      }
+      .mlg b {
+        font-weight: 600;
+      }
+      .mood {
+        font-size: 16px;
+        line-height: 1;
+        vertical-align: -1px;
+      }
+
+      /* caller table */
+      .wrap {
+        overflow-x: auto;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      table {
+        width: 100%;
+        min-width: 900px;
+        border-collapse: collapse;
+      }
+      th {
+        text-align: left;
+        font-weight: 500;
+        color: var(--mute);
+        font-size: 12px;
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      td {
+        padding: 6px 10px;
+        border-top: 1px solid var(--line);
+        vertical-align: top;
+      }
+      td.c {
+        text-align: center;
+        font-weight: 600;
+        width: 52px;
+      }
+      td.nm {
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      td.md {
+        white-space: nowrap;
+      }
+      td.dt {
+        white-space: nowrap;
+        color: var(--ink);
+      }
+      tr.gh td {
+        font-weight: 700;
+        font-size: 13px;
+        padding: 7px 10px;
+        border-top: 0;
+        background: var(--cb);
+        color: var(--c);
+      }
+      tr.row td:first-child {
+        box-shadow: inset 4px 0 0 var(--c);
+      }
+      .yes {
+        background: var(--r);
+        color: #fff;
+      }
+      .no {
+        color: var(--mute);
+        font-weight: 500;
+      }
+      .dash {
+        color: var(--mute);
+      }
+      .warn {
+        color: var(--o);
+        font-weight: 600;
+      }
+      .foot {
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--mute);
+      }
+
+      /* clock bar */
+      .clock {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 8px 12px;
+        margin-bottom: 10px;
+      }
+      .clock .t {
+        font:
+          700 20px/1 'Bricolage Grotesque',
+          Figtree,
+          sans-serif;
+        margin-right: 4px;
+        min-width: 150px;
+      }
+      .clock .lbl {
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .btn {
+        background: var(--nb);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 5px 10px;
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .btn.on {
+        background: var(--ink);
+        color: var(--bg);
+        border-color: var(--ink);
+      }
+      .sp {
+        flex: 1;
+      }
+      .toprow {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 6px;
+      }
+      .pass {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 8px 12px;
+        margin-bottom: 10px;
+      }
+      .pass summary {
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .pass ul {
+        margin: 8px 0 2px;
+        padding-left: 18px;
+      }
+      .pass li {
+        margin: 4px 0;
+        font-size: 13px;
+      }
+      .pass .ok {
+        color: var(--g);
+      }
+      .card.block {
+        background: transparent;
+        border-style: dashed;
+        border-left-style: solid;
+        border-left-color: var(--n);
+        color: var(--mute);
+      }
+
+      /* stats */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .st {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 8px 12px;
+      }
+      .st b {
+        display: block;
+        font:
+          700 22px/1.1 'Bricolage Grotesque',
+          Figtree,
+          sans-serif;
+      }
+      .st span {
+        font-size: 12px;
+        color: var(--mute);
+      }
+
+      /* day strip */
+      .days {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 6px;
+        margin-bottom: 8px;
+      }
+      .day {
+        flex: 0 0 auto;
+        min-width: 58px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 6px 8px;
+        text-align: center;
+        position: relative;
+      }
+      .day small {
+        display: block;
+        color: var(--mute);
+        font-size: 11px;
+      }
+      .day b {
+        font-size: 16px;
+      }
+      .day .ct {
+        display: block;
+        font-size: 11px;
+        color: var(--mute);
+        margin-top: 1px;
+      }
+      .day.closed {
+        opacity: 0.55;
+      }
+      .day.sel {
+        background: var(--ink);
+        color: var(--bg);
+        border-color: var(--ink);
+      }
+      .day.sel small,
+      .day.sel .ct {
+        color: inherit;
+        opacity: 0.8;
+      }
+      .day.today::after {
+        content: '';
+        position: absolute;
+        top: 5px;
+        right: 6px;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--r);
+      }
+      .day .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--c);
+        margin-right: 3px;
+      }
+
+      /* hour grid */
+      .grid {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .hr {
+        display: grid;
+        grid-template-columns: 96px 1fr;
+        border-top: 1px solid var(--line);
+      }
+      .hr:first-child {
+        border-top: 0;
+      }
+      .hl {
+        padding: 8px 10px;
+        border-right: 1px solid var(--line);
+        background: var(--nb);
+      }
+      .hl b {
+        font:
+          700 16px/1 'Bricolage Grotesque',
+          Figtree,
+          sans-serif;
+      }
+      .hl .cap {
+        display: block;
+        font-size: 11px;
+        color: var(--mute);
+        margin-top: 4px;
+      }
+      .bar {
+        display: flex;
+        height: 6px;
+        border-radius: 3px;
+        background: var(--line);
+        overflow: hidden;
+        margin-top: 5px;
+      }
+      .bar {
+        position: relative;
+      }
+      .bar i {
+        display: block;
+        height: 100%;
+        background: var(--c);
+      }
+      .bar::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: -1px;
+        bottom: -1px;
+        width: 2px;
+        background: var(--ink);
+        opacity: 0.55;
+      }
+      .hb {
+        padding: 6px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        min-height: 46px;
+      }
+      .hr.now .hl {
+        box-shadow: inset 4px 0 0 var(--r);
+      }
+      .hr.now .hl b::after {
+        content: ' now';
+        font:
+          600 11px Figtree,
+          sans-serif;
+        color: var(--r);
+      }
+      .hr.past .hb {
+        opacity: 0.6;
+      }
+      .empty {
+        color: var(--mute);
+        font-size: 12px;
+        padding: 6px 2px;
+      }
+      .closedmsg {
+        padding: 18px;
+        color: var(--mute);
+      }
+
+      /* cards */
+      .card {
+        display: flex;
+        gap: 9px;
+        align-items: flex-start;
+        border: 1px solid var(--line);
+        border-left: 5px solid var(--c);
+        border-radius: 9px;
+        padding: 6px 10px;
+        background: var(--cb);
+      }
+      .card.appt {
+        background: var(--card);
+        border-left-color: var(--g);
+      }
+      .card.appt.k-g {
+        --c: var(--g);
+        --cb: var(--gb);
+      }
+      .card.cancelled {
+        border-style: dashed;
+        border-left-style: solid;
+        border-left-color: var(--n);
+        background: transparent;
+        color: var(--mute);
+      }
+      .card.cancelled .ln1 b {
+        text-decoration: line-through;
+      }
+      .card.isdone {
+        background: transparent;
+        opacity: 0.6;
+      }
+      .card.isdone .ln1 b,
+      .card.isdone .ln2 {
+        text-decoration: line-through;
+      }
+      .card.next {
+        box-shadow: 0 0 0 2px var(--c);
+      }
+      .cb {
+        position: relative;
+        flex: 0 0 auto;
+        margin-top: 2px;
+        display: block;
+        width: 20px;
+        height: 20px;
+      }
+      .cb input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        margin: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+      }
+      .cb input:disabled {
+        cursor: not-allowed;
+      }
+      .box {
+        display: block;
+        width: 20px;
+        height: 20px;
+        border-radius: 6px;
+        border: 2px solid var(--c);
+        background: var(--card);
+      }
+      .cb input:checked + .box {
+        background: var(--c);
+      }
+      .cb input:checked + .box::after {
+        content: '';
+        display: block;
+        width: 5px;
+        height: 10px;
+        margin: 1px 0 0 5px;
+        border: solid var(--card);
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+      .cb input:disabled + .box {
+        opacity: 0.4;
+      }
+      .tx {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        min-width: 0;
+      }
+      .ln1 {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+      }
+      .ln2 {
+        font-size: 13px;
+      }
+      .ln3 {
+        font-size: 12px;
+        color: var(--mute);
+      }
+      .time {
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      .tag {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 0 7px;
+        border-radius: 5px;
+        background: var(--ink);
+        color: var(--bg);
+      }
+      .tag.up {
+        background: var(--g);
+        color: #fff;
+      }
+      .tag.dn {
+        background: var(--o);
+        color: #fff;
+      }
+      .tag.carry {
+        background: var(--nb);
+        color: var(--mute);
+      }
+      .flash {
+        animation: fl 1.6s ease-out 1;
+      }
+      @keyframes fl {
+        0% {
+          box-shadow: 0 0 0 4px var(--c);
+        }
+        100% {
+          box-shadow: 0 0 0 0 transparent;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .flash {
+          animation: none;
+        }
+      }
+      .rules {
+        font-size: 12px;
+        color: var(--mute);
+        margin-top: 10px;
+        line-height: 1.5;
+      }
+      .rules b {
+        color: var(--ink);
+      }
+      .hidden {
+        display: none;
+      }
+      .tel {
+        font-weight: 600;
+        font-size: 12px;
+        color: var(--ink);
+        text-decoration: none;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 0 7px;
+        white-space: nowrap;
+      }
+      .tel:hover {
+        text-decoration: underline;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 7fr 3fr;
+        gap: 14px;
+        align-items: start;
+      }
+      .main {
+        min-width: 0;
+      }
+      .side {
+        position: sticky;
+        top: 12px;
+        min-height: 320px;
+        border: 2px dashed var(--line);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--mute);
+        text-align: center;
+        padding: 16px;
+      }
+      .twocal {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 10px;
+        align-items: start;
+      }
+      .col {
+        min-width: 0;
+      }
+      .ch {
+        font:
+          700 15px/1.2 'Bricolage Grotesque',
+          Figtree,
+          sans-serif;
+        margin: 0 0 6px;
+      }
+      .ch small {
+        font:
+          400 12px Figtree,
+          sans-serif;
+        color: var(--mute);
+        margin-left: 6px;
+      }
+      .twocal .hr {
+        grid-template-columns: 84px 1fr;
+      }
+      .twocal .hl {
+        padding: 8px;
+      }
+      .twocal .cap {
+        font-size: 10.5px;
+      }
+      @media (max-width: 1100px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .side {
+          position: static;
+          min-height: 120px;
+        }
+      }
+      @media (max-width: 760px) {
+        .twocal {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 640px) {
+        .hr {
+          grid-template-columns: 70px 1fr;
+        }
+        .page {
+          padding: 16px;
+        }
+        h1 {
+          font-size: 23px;
+        }
+      }
+      @media print {
+        @page {
+          size: A4 landscape;
+          margin: 7mm;
+        }
+        body {
+          background: #fff;
+          font-size: 9.5px;
+        }
+        .page {
+          padding: 0;
+          max-width: none;
+        }
+        h1 {
+          font-size: 20px;
+        }
+        .sub {
+          margin-bottom: 6px;
+        }
+        td {
+          padding: 2px 8px;
+        }
+        th {
+          padding: 4px 8px;
+        }
+        .wrap {
+          overflow: visible;
+          border: 0;
+        }
+        table {
+          min-width: 0;
+        }
+        tr {
+          break-inside: avoid;
+        }
+        .tabs,
+        .clock {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1>Monday morning screen</h1>
+      <div class="sub">
+        Harbourside Dental. Friday 5pm to Monday 8am: 31 calls from 26 callers,
+        all answered by Jade.
+      </div>
+      <div class="tabs" role="tablist">
+        <button
+          class="tab"
+          role="tab"
+          id="tab-cal"
+          aria-selected="true"
+          aria-controls="p-cal"
+        >
+          Calendar
+        </button>
+        <button
+          class="tab"
+          role="tab"
+          id="tab-tbl"
+          aria-selected="false"
+          aria-controls="p-tbl"
+        >
+          Every caller
+        </button>
+      </div>
+
+      <!-- ============ CALENDAR ============ -->
+      <section id="p-cal" role="tabpanel" aria-labelledby="tab-cal">
+        <div class="layout">
+          <div class="main">
+            <div class="toprow">
+              <button
+                class="btn"
+                id="demoBtn"
+                aria-expanded="false"
+                aria-controls="clock"
+              >
+                Demo controls
+              </button>
+            </div>
+            <div class="clock hidden" id="clock">
+              <span class="t" id="clk">Mon 17 Nov 8:00</span>
+              <span class="lbl">Demo clock (simulated)</span>
+              <span class="sp"></span>
+              <button class="btn" id="play" aria-pressed="false">Play</button>
+              <button class="btn" data-speed="1">1 min/s</button>
+              <button class="btn" data-speed="5">5 min/s</button>
+              <button class="btn" data-speed="15">15 min/s</button>
+              <button class="btn" data-jump="15">+15 min</button>
+              <button class="btn" data-jump="60">+1 hour</button>
+              <button class="btn" id="nextday">Next day</button>
+              <button class="btn" id="golive">Back to live</button>
+              <button class="btn" id="reset">Reset</button>
+            </div>
+            <div class="stats" id="stats"></div>
+            <details class="pass" id="pass">
+              <summary id="passSum"></summary>
+              <div id="passBody"></div>
+            </details>
+            <div class="legend" id="lg"></div>
+            <div class="days" id="days" role="tablist" aria-label="Days"></div>
+            <div class="twocal">
+              <div class="col">
+                <h2 class="ch">Bookings<small>fixed, never moves</small></h2>
+                <div class="grid" id="gridS"></div>
+              </div>
+              <div class="col">
+                <h2 class="ch">
+                  Task plan<small>live, reshuffles as she works</small>
+                </h2>
+                <div class="grid" id="grid"></div>
+              </div>
+            </div>
+            <div class="rules">
+              <b>How the day reshuffles.</b> The plan follows the real clock
+              (clinic time). Urgent and High tasks take the first hour. Normal
+              and Low tasks wait in the hours after it and are marked "if she
+              has time". Walk-ins can arrive at any hour, so each hour keeps
+              about 30 minutes free. Once every Urgent and High task is ticked,
+              she is ahead: the buffer lifts and Normal and Low tasks move up
+              into what is left of the hour, one by one as far as they fit, and
+              each tick pulls the next one up. Let an hour pass and whatever is
+              left moves to the next hour with room, still in priority order.
+              Anything that won't fit before close rolls to the next open day.
+              Tasks skip front-desk blocks (lunch 14:00 to 14:45, a patient
+              arriving, check-in around each booking). Bookings are fixed and
+              never move. <b>Final pass.</b> Before opening, a second layer
+              re-reads the call log, corrects Jade's mistakes and writes the
+              suggestions on the task cards. Task times average about 3 minutes
+              a call and are working estimates (see <code>CATS</code> in the
+              file), not benchmarked averages.
+            </div>
+          </div>
+          <aside class="side" aria-label="Reserved for a later panel">
+            Reserved for the next panel (30%)
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============ EVERY CALLER ============ -->
+      <section
+        id="p-tbl"
+        role="tabpanel"
+        aria-labelledby="tab-tbl"
+        class="hidden"
+      >
+        <div class="legend" id="mlg"></div>
+        <div class="wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Person</th>
+                <th>Mood</th>
+                <th style="text-align: center">Calls</th>
+                <th>Reason</th>
+                <th>What Jade did</th>
+                <th>Urgent?</th>
+                <th>Booked / review on</th>
+              </tr>
+            </thead>
+            <tbody id="tb"></tbody>
+          </table>
+        </div>
+        <div class="foot">
+          Clinical detail is summarised as a category on purpose, and phone
+          numbers are on the calendar cards. "Urgent" means it needs action
+          today: an urgent patient or an unanswered repeat complaint. Jade's own
+          "priority" flags are re-checked by the final pass, which is why Kevin
+          Turner is now "Not urgent". Everything else is "Not urgent". Weekdays
+          follow the dates in the call data.
+        </div>
+      </section>
+    </div>
+
+    <script>
+      /* ---------- calendar maths ----------
+   Day index 0 = Monday 17 Nov 2026 ("today"). Weekday names follow the call data's own labels
+   (its summaries say 17 Nov is a Monday), not the real 2026 calendar. */
+      const DAY0 = Date.UTC(2026, 10, 17),
+        WD = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      const wd = (i) => WD[((i % 7) + 7) % 7],
+        isOpen = (i) => ((i % 7) + 7) % 7 < 5
+      const dnum = (i) => new Date(DAY0 + i * 864e5).getUTCDate()
+      const mon = (i) =>
+        new Date(DAY0 + i * 864e5).toLocaleString('en-AU', {
+          month: 'short',
+          timeZone: 'UTC',
+        })
+      const dlabel = (i) => `${wd(i)} ${dnum(i)} ${mon(i)}`
+      const NOV = (n) => n - 17,
+        DEC = (n) => n + 13
+      const DAYS = 16,
+        LAST = 40,
+        OPEN = 480,
+        CLOSE = 1020
+      const fmt = (m) => {
+        m = Math.floor(m)
+        return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`
+      }
+      const hm = (s) => {
+        const [h, m] = s.split(':').map(Number)
+        return h * 60 + m
+      }
+
+      const MOOD = {
+        nicer: {
+          e: '😟',
+          label: 'Nicer',
+          tip: 'Slow down, apologise, show empathy',
+        },
+        normal: { e: '🙂', label: 'Normal', tip: 'Polite and professional' },
+        casual: { e: '😄', label: 'Casual', tip: 'Friendly and relaxed' },
+      }
+      const PRI = {
+        1: { name: 'Urgent', k: 'r' },
+        2: { name: 'High', k: 'o' },
+        3: { name: 'Normal', k: 'b' },
+        4: { name: 'Low', k: 'n' },
+      }
+
+      /* minutes per task type: working estimates, swap for benchmarked averages */
+      const CATS = {
+        triage: { label: 'Urgent patient call', min: 5 },
+        complaint: { label: 'Complaint callback', min: 6 },
+        confirm: { label: 'Confirm booking', min: 3 },
+        offer: { label: 'Slot / waitlist offer', min: 3 },
+        winback: { label: 'Win-back call', min: 3 },
+        rebook: { label: 'Rebooking call', min: 3 },
+        referral: { label: 'Referral callback', min: 4 },
+        datafix: { label: 'Fix contact details', min: 3 },
+        bookfix: { label: 'Fix a booking', min: 3 },
+        note: { label: 'Chart note', min: 2 },
+        release: { label: 'Release a slot', min: 2 },
+        remind: { label: 'Appointment reminder', min: 2 },
+      }
+      /* Walk-ins can arrive any hour, so each hour only gets 30 min of tasks by default.
+   The more important a task, the further it may stretch that budget (P1 can use the whole hour). */
+      const CEIL = { 1: 60, 2: 40, 3: 30, 4: 30 },
+        BUDGET = 30
+
+      /* ---------- the call log ----------
+   weekend-calls.json is embedded so this file opens anywhere. Bookings, phone numbers, moods and tasks
+   below are all derived from it. */
+      const DATA = {
+        clinic: {
+          name: 'Harbourside Dental',
+          suburb: 'Balmain',
+          state: 'NSW',
+          practitioners: ['Dr Rebecca Foster', 'Dr Mark Bennett'],
+          business_hours: 'Mon-Fri 8:00-17:00, closed weekends',
+          recording_enabled: true,
+        },
+        period: {
+          label: 'Weekend of 14-17 November 2026',
+          from: '2026-11-14T17:00:00+11:00',
+          to: '2026-11-17T08:00:00+11:00',
+          note: 'Clinic closed from Friday 5pm. This is everything Jade handled while nobody was there.',
+        },
+        calls: [
+          {
+            id: 'c001',
+            started_at: '2026-11-14T17:04:22+11:00',
+            duration_seconds: 94,
+            caller_number: '+61412887301',
+            caller_name: 'John Smith',
+            outcome: 'booked',
+            intent: 'new_patient',
+            summary:
+              "New patient, wants a check-up and clean. Mentioned he hasn't been to a dentist in about four years.",
+            appointment: {
+              date: '2026-11-19',
+              time: '14:30',
+              type: 'Check-up and clean',
+              practitioner: 'Dr Rebecca Foster',
+            },
+            recording_available: true,
+            sentiment: 'positive',
+          },
+          {
+            id: 'c002',
+            started_at: '2026-11-14T17:41:08+11:00',
+            duration_seconds: 38,
+            caller_number: '+61498220156',
+            caller_name: 'Sarah Johnson',
+            outcome: 'cancelled',
+            intent: 'cancellation',
+            summary:
+              'Cancelled Monday 9:00am appointment. Work conflict. Did not rebook.',
+            appointment: {
+              date: '2026-11-17',
+              time: '09:00',
+              type: 'Check-up',
+              practitioner: 'Dr Rebecca Foster',
+              action: 'cancelled',
+            },
+            recording_available: true,
+            sentiment: 'neutral',
+          },
+          {
+            id: 'c003',
+            started_at: '2026-11-14T18:12:55+11:00',
+            duration_seconds: 61,
+            caller_number: '+61403771842',
+            caller_name: 'Emily Davis',
+            outcome: 'booked',
+            intent: 'new_patient',
+            summary:
+              'New patient. Moved to the area recently, looking for a regular dentist.',
+            appointment: {
+              date: '2026-11-20',
+              time: '10:00',
+              type: 'New patient exam',
+              practitioner: 'Dr Mark Bennett',
+            },
+            recording_available: true,
+            sentiment: 'positive',
+          },
+          {
+            id: 'c004',
+            started_at: '2026-11-14T19:33:17+11:00',
+            duration_seconds: 22,
+            caller_number: '+61455019927',
+            caller_name: null,
+            outcome: 'hung_up',
+            intent: 'unknown',
+            summary:
+              "Caller hung up shortly after Jade's greeting. No information captured.",
+            appointment: null,
+            recording_available: true,
+            sentiment: 'neutral',
+          },
+          {
+            id: 'c005',
+            started_at: '2026-11-14T20:07:44+11:00',
+            duration_seconds: 118,
+            caller_number: '+61421665338',
+            caller_name: 'Michael Brown',
+            outcome: 'message_taken',
+            intent: 'billing_query',
+            summary:
+              "Disputing an invoice from his last visit. Says he was charged for a service he didn't receive. Wants a callback from the practice manager.",
+            appointment: null,
+            recording_available: true,
+            sentiment: 'negative',
+            flagged: 'complaint',
+          },
+          {
+            id: 'c006',
+            started_at: '2026-11-14T21:19:02+11:00',
+            duration_seconds: 47,
+            caller_number: '+61407449183',
+            caller_name: 'Jessica Wilson',
+            outcome: 'booked',
+            intent: 'existing_patient',
+            summary:
+              'Existing patient, wants to bring her six-month check-up forward.',
+            appointment: {
+              date: '2026-11-21',
+              time: '16:00',
+              type: 'Check-up and clean',
+              practitioner: 'Dr Rebecca Foster',
+            },
+            recording_available: true,
+            sentiment: 'positive',
+          },
+          {
+            id: 'c007',
+            started_at: '2026-11-15T08:22:39+11:00',
+            duration_seconds: 73,
+            caller_number: '+61438902114',
+            caller_name: 'David Miller',
+            outcome: 'no_availability',
+            intent: 'new_patient',
+            summary:
+              "Wanted an appointment this coming week. Nothing suitable available. Said he would 'try somewhere else' before ending the call.",
+            appointment: null,
+            recording_available: true,
+            sentiment: 'negative',
+            flagged: 'lost_opportunity',
+          },
+          {
+            id: 'c008',
+            started_at: '2026-11-15T09:15:51+11:00',
+            duration_seconds: 29,
+            caller_number: '+61466330887',
+            caller_name: 'Amanda Taylor',
+            outcome: 'question_answered',
+            intent: 'clinic_question',
+            summary:
+              'Asked about parking. Jade confirmed street parking and the Wilson car park two doors down.',
+            appointment: null,
+            recording_available: true,
+            sentiment: 'positive',
+          },
+          {
+            id: 'c009',
+            started_at: '2026-11-15T09:47:13+11:00',
+            duration_seconds: 52,
+            caller_number: '+61491775206',
+            caller_name: 'James Anderson',
+            outcome: 'failed_callback_number',
+            intent: 'new_patient',
+            summary:
+              'Wanted to book a first appointment. Provided a callback number that appears to be one digit short — captured as 041277520. Could not confirm before the call dropped.',
+            appointment: null,
+            recording_available: true,
+            sentiment: 'neutral',
+            flagged: 'bad_data',
+          },
+          {
+            id: 'c010',
+            started_at: '2026-11-15T10:33:28+11:00',
+            duration_seconds: 88,
+            caller_number: '+61402118644',
+            caller_name: 'Laura Thomas',
+            outcome: 'booked',
+            intent: 'new_patient',
+            summary:
+              "New patient. Asked whether the clinic does children's appointments — confirmed yes. Booking for her son.",
+            appointment: {
+              date: '2026-11-22',
+              time: '09:30',
+              type: "Children's check-up",
+              practitioner: 'Dr Mark Bennett',
+            },
+            recording_available: true,
+            sentiment: 'positive',
+          },
+          {
+            id: 'c011',
+            started_at: '2026-11-15T11:02:09+11:00',
+            duration_seconds: 41,
+            caller_number: '+61477283019',
+            caller_name: 'Chris Martin',
+            outcome: 'no_availability',
+            intent: 'new_patient',
+            summary:
+              'First attempt. Asked for anything available Monday or Tuesday. Nothing suitable. Said he would call back.',
+            appointment: null,
+            recording_available: true,
+            sentiment: 'neutral',
+            repeat_caller: true,
+          },
+          {
+            id: 'c012',
+            started_at: '2026-11-15T11:58:44+11:00',
+            duration_seconds: 19,
+            caller_number: '+61413556722',
+            caller_name: null,
+            outcome: 'wrong_number',
+            intent: 'unknown',
+            summary:
+              'Caller was trying to reach a veterinary clinic. Wrong number.',
+            appointment: null,
+            recording_available: true,
+            sentiment: 'neutral',
+          },
+          {
+            id: 'c013',
+            started_at: '2026-11-15T13:24:36+11:00',
+            duration_seconds: 66,
+            caller_number: '+61477283019',
+            caller_name: 'Chris Martin',
+            outcome: 'no_availability',
+            intent: 'new_patient',
+            summary:
+              'Second attempt. Asked again about Monday or Tuesday availability. Still nothing suitable. Audibly frustrated.',
+            appointment: null,
+            recording_available: true,
+            sentiment: 'negative',
+            repeat_caller: true,
+          },
+          {
+            id: 'c014',
+            started_at: '2026-11-15T14:11:57+11:00',
+            duration_seconds: 103,
+            caller_number: '+61434920651',
+            caller_name: 'Daniel Clark',
+            outcome: 'message_taken',
+            intent: 'out_of_scope',
+            summary:
+              'Asked about orthodontic treatment and clear aligners. The clinic does not offer orthodontics. Jade took a message and suggested the practice would call back with a referral.',
+            appointment: null,
+            recording_available: true,
+            sentiment: 'neutral',
+            flagged: 'service_not_offered',
+          },
+          {
+            id: 'c015',
+            started_at: '2026-11-15T15:40:22+11:00',
+            duration_seconds: 57,
+            caller_number: '+61425887140',
+            caller_name: 'Rachel Lewis',
+            outcome: 'cancelled',
+            intent: 'cancellation',
+            summary:
+              'Cancelled Tuesday 11:00am. Family emergency. Asked to be called to rebook next week.',
+            appointment: {
+              date: '2026-11-18',
+              time: '11:00',
+              type: 'Check-up and clean',
+              practitioner: 'Dr Rebecca Foster',
+              action: 'cancelled',
+            },
+            recording_available: true,
+            sentiment: 'neutral',
+            flagged: 'rebook_requested',
+          },
+          {
+            id: 'c016',
+            started_at: '2026-11-15T16:52:08+11:00',
+            duration_seconds: 34,
+            caller_number: '+61408117395',
+            caller_name: 'Matthew Walker',
+            outcome: 'question_answered',
+            intent: 'clinic_question',
+            summary:
+              'Asked whether the clinic accepts HCF. Jade confirmed yes and that HICAPS is available on site.',
+            appointment: null,
+            recording_available: true,
+            sentiment: 'positive',
+          },
+          {
+            id: 'c017',
+            started_at: '2026-11-15T18:29:41+11:00',
+            duration_seconds: 79,
+            caller_number: '+61477283019',
+            caller_name: 'Chris Martin',
+            outcome: 'booked',
+            intent: 'new_patient',
+            summary:
+              'Third attempt. Accepted a Thursday afternoon slot after being unable to get Monday or Tuesday twice earlier today.',
+            appointment: {
+              date: '2026-11-20',
+              time: '15:30',
+              type: 'New patient exam',
+              practitioner: 'Dr Rebecca Foster',
+            },
+            recording_available: true,
+            sentiment: 'neutral',
+            repeat_caller: true,
+          },
+          {
+            id: 'c018',
+            started_at: '2026-11-15T20:14:03+11:00',
+            duration_seconds: 45,
+            caller_number: '+61419663288',
+            caller_name: 'Emma Hall',
+            outcome: 'booked',
+            intent: 'existing_patient',
+            summary: 'Existing patient booking a routine clean.',
+            appointment: {
+              date: '2026-11-25',
+              time: '08:30',
+              type: 'Clean',
+              practitioner: 'Dr Mark Bennett',
+            },
+            recording_available: true,
+            sentiment: 'positive',
+          },
+          {
+            id: 'c019',
+            started_at: '2026-11-16T02:14:37+11:00',
+            duration_seconds: 126,
+            caller_number: '+61452008914',
+            caller_name: 'Peter Young',
+            outcome: 'urgent_flagged',
+            intent: 'urgent',
+            summary:
+              'Called at 2:14am in significant pain. Jade advised that for a genuine emergency he should attend an emergency department, took his details, and flagged the call as urgent for first thing Monday.',
+            appointment: null,
+            recording_available: true,
+            sentiment: 'negative',
+            flagged: 'urgent',
+          },
+          {
+            id: 'c020',
+            started_at: '2026-11-16T08:41:19+11:00',
+            duration_seconds: 62,
+            caller_number: '+61406229773',
+            caller_name: 'Olivia King',
+            outcome: 'booked',
+            intent: 'new_patient',
+            summary:
+              'New patient, referred by an existing patient. Wants a check-up and to discuss whitening.',
+            appointment: {
+              date: '2026-11-24',
+              time: '11:00',
+              type: 'New patient exam',
+              practitioner: 'Dr Rebecca Foster',
+            },
+            recording_available: true,
+            sentiment: 'positive',
+          },
+          {
+            id: 'c021',
+            started_at: '2026-11-16T09:33:55+11:00',
+            duration_seconds: 27,
+            caller_number: '+61443891026',
+            caller_name: null,
+            outcome: 'hung_up',
+            intent: 'unknown',
+            summary: "Hung up during Jade's greeting. Nothing captured.",
+            appointment: null,
+            recording_available: true,
+            sentiment: 'neutral',
+          },
+          {
+            id: 'c022',
+            started_at: '2026-11-16T10:18:42+11:00',
+            duration_seconds: 95,
+            caller_number: '+61417550284',
+            caller_name: 'Sophie Wright',
+            outcome: 'booked',
+            intent: 'new_patient',
+            summary:
+              'New patient. Nervous about dental visits, asked whether the practice is good with anxious patients. Jade confirmed and noted the concern.',
+            appointment: {
+              date: '2026-11-26',
+              time: '13:00',
+              type: 'New patient exam',
+              practitioner: 'Dr Mark Bennett',
+            },
+            recording_available: true,
+            sentiment: 'positive',
+            flagged: 'note_for_practitioner',
+          },
+          {
+            id: 'c023',
+            started_at: '2026-11-16T11:05:13+11:00',
+            duration_seconds: 33,
+            caller_number: '+61498220156',
+            caller_name: 'Sarah Johnson',
+            outcome: 'booked',
+            intent: 'existing_patient',
+            summary:
+              'Rebooking the Monday appointment she cancelled on Friday evening.',
+            appointment: {
+              date: '2026-11-27',
+              time: '09:00',
+              type: 'Check-up',
+              practitioner: 'Dr Rebecca Foster',
+            },
+            recording_available: true,
+            sentiment: 'positive',
+          },
+          {
+            id: 'c024',
+            started_at: '2026-11-16T12:47:29+11:00',
+            duration_seconds: 71,
+            caller_number: '+61429104778',
+            caller_name: 'Grace Scott',
+            outcome: 'no_availability',
+            intent: 'new_patient',
+            summary:
+              'First attempt. Wanted an appointment before the end of the month. Nothing available that suited.',
+            appointment: null,
+            recording_available: true,
+            sentiment: 'neutral',
+            repeat_caller: true,
+          },
+          {
+            id: 'c025',
+            started_at: '2026-11-16T14:22:06+11:00',
+            duration_seconds: 49,
+            caller_number: '+61461337920',
+            caller_name: 'Ryan Baker',
+            outcome: 'question_answered',
+            intent: 'clinic_question',
+            summary:
+              'Asked about the gap fee for a check-up and clean with HCF cover. Jade gave the standard fee and explained the gap depends on individual cover.',
+            appointment: null,
+            recording_available: true,
+            sentiment: 'positive',
+          },
+          {
+            id: 'c026',
+            started_at: '2026-11-16T15:58:51+11:00',
+            duration_seconds: 84,
+            caller_number: '+61429104778',
+            caller_name: 'Grace Scott',
+            outcome: 'no_availability',
+            intent: 'new_patient',
+            summary:
+              'Second attempt, three hours after the first. Same request. Still nothing available. Asked whether there was a waiting list — Jade took her details.',
+            appointment: null,
+            recording_available: true,
+            sentiment: 'negative',
+            repeat_caller: true,
+            flagged: 'waitlist_requested',
+          },
+          {
+            id: 'c027',
+            started_at: '2026-11-16T17:11:34+11:00',
+            duration_seconds: 56,
+            caller_number: '+61414778203',
+            caller_name: 'Andrew Green',
+            outcome: 'booked',
+            intent: 'existing_patient',
+            summary: 'Existing patient rescheduling from Wednesday to Friday.',
+            appointment: {
+              date: '2026-11-21',
+              time: '10:30',
+              type: 'Check-up',
+              practitioner: 'Dr Rebecca Foster',
+              action: 'rescheduled',
+            },
+            recording_available: true,
+            sentiment: 'positive',
+          },
+          {
+            id: 'c028',
+            started_at: '2026-11-16T19:04:17+11:00',
+            duration_seconds: 31,
+            caller_number: '+61435662119',
+            caller_name: 'Natalie Evans',
+            outcome: 'cancelled',
+            intent: 'cancellation',
+            summary:
+              'Cancelled Thursday 14:00. Travelling for work. Will call back to rebook.',
+            appointment: {
+              date: '2026-11-20',
+              time: '14:00',
+              type: 'Clean',
+              practitioner: 'Dr Mark Bennett',
+              action: 'cancelled',
+            },
+            recording_available: true,
+            sentiment: 'neutral',
+          },
+          {
+            id: 'c029',
+            started_at: '2026-11-16T20:38:02+11:00',
+            duration_seconds: 67,
+            caller_number: '+61447290163',
+            caller_name: 'Kevin Turner',
+            outcome: 'booked',
+            intent: 'new_patient',
+            summary:
+              'New patient. Chipped a tooth on the weekend, not painful but wants it looked at.',
+            appointment: {
+              date: '2026-11-18',
+              time: '08:00',
+              type: 'Emergency assessment',
+              practitioner: 'Dr Rebecca Foster',
+            },
+            recording_available: true,
+            sentiment: 'neutral',
+            flagged: 'priority',
+          },
+          {
+            id: 'c030',
+            started_at: '2026-11-17T06:52:44+11:00',
+            duration_seconds: 43,
+            caller_number: '+61402883517',
+            caller_name: 'Hannah Moore',
+            outcome: 'booked',
+            intent: 'existing_patient',
+            summary: 'Existing patient, routine booking before work.',
+            appointment: {
+              date: '2026-12-02',
+              time: '17:00',
+              type: 'Check-up and clean',
+              practitioner: 'Dr Mark Bennett',
+            },
+            recording_available: true,
+            sentiment: 'positive',
+          },
+          {
+            id: 'c031',
+            started_at: '2026-11-17T07:52:11+11:00',
+            duration_seconds: 58,
+            caller_number: '+61421665338',
+            caller_name: 'Michael Brown',
+            outcome: 'message_taken',
+            intent: 'billing_query',
+            summary:
+              'Second call about the same invoice dispute. Has not received a callback since Friday evening. Increasingly frustrated.',
+            appointment: null,
+            recording_available: true,
+            sentiment: 'negative',
+            flagged: 'complaint',
+            repeat_caller: true,
+          },
+        ],
+      }
+      const CALLS = DATA.calls
+      const dayIdx = (iso) =>
+        Math.round(
+          (Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) -
+            DAY0) /
+            864e5,
+        )
+      const callAbs = (c) =>
+        dayIdx(c.started_at) * 1440 +
+        Number(c.started_at.slice(11, 13)) * 60 +
+        Number(c.started_at.slice(14, 16))
+      const callsOf = (n) => CALLS.filter((c) => c.caller_name === n)
+      const ids = (n) =>
+        callsOf(n)
+          .map((c) => c.id)
+          .join(', ')
+      const slug = (n) => n.split(' ')[0].toLowerCase()
+      /* James Anderson: this is the caller ID he rang from; the number he gave was too short. */
+      const PHONE = {}
+      CALLS.forEach((c) => {
+        if (c.caller_name && !PHONE[c.caller_name])
+          PHONE[c.caller_name] = c.caller_number
+      })
+      const tel = (n) => {
+        const p = PHONE[n]
+        if (!p) return ''
+        const l = '0' + p.slice(3)
+        return `<a class="tel" href="tel:${p}" title="Call ${n}">📞 ${l.slice(0, 4)} ${l.slice(4, 7)} ${l.slice(7)}</a>`
+      }
+
+      /* mood: Nicer if anything negative or flagged as sensitive, Casual if their latest call was positive, else Normal */
+      const NICER_FLAGS = [
+        'urgent',
+        'complaint',
+        'lost_opportunity',
+        'note_for_practitioner',
+        'rebook_requested',
+        'waitlist_requested',
+      ]
+      const moodOf = (n) => {
+        const cs = callsOf(n).sort((a, b) => callAbs(a) - callAbs(b))
+        if (!cs.length) return 'normal'
+        if (
+          cs.some(
+            (c) =>
+              c.sentiment === 'negative' || NICER_FLAGS.includes(c.flagged),
+          )
+        )
+          return 'nicer'
+        return cs[cs.length - 1].sentiment === 'positive' ? 'casual' : 'normal'
+      }
+
+      /* ---------- bookings (fixed) ---------- */
+      const hhmm = (m) =>
+        `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+      const shortPrac = (p) => p.replace(/^Dr \w+ /, 'Dr ')
+      const APPTS = CALLS.filter((c) => c.appointment).map((c) => {
+        const a = c.appointment
+        return {
+          cid: c.id,
+          who: c.caller_name,
+          mood: moodOf(c.caller_name),
+          day: dayIdx(a.date + 'T00:00:00'),
+          time: a.time,
+          type: a.type,
+          prac: shortPrac(a.practitioner),
+          cancelled: a.action === 'cancelled',
+          madeAt: callAbs(c),
+          note:
+            c.flagged === 'note_for_practitioner'
+              ? 'Note for practitioner'
+              : '',
+        }
+      })
+      APPTS.forEach((a) => {
+        if (a.cancelled) return
+        if (!isOpen(a.day)) a.warn = 'Clinic is closed on this day'
+        else if (hm(a.time) + 30 > CLOSE) a.warn = 'Starts at closing time'
+      })
+      const BOOKED = APPTS.filter((a) => !a.cancelled)
+      const sameSlot = (a, b) =>
+        a.day === b.day &&
+        a.prac === b.prac &&
+        Math.abs(hm(a.time) - hm(b.time)) < 30
+      const slotAbs = (s) => s.day * 1440 + hm(s.time)
+      const slotTxt = (s) => `${dlabel(s.day)} ${s.time} with ${s.prac}`
+      /* cancelled slots nobody has taken: the only openings the log can prove */
+      const FREED = APPTS.filter(
+        (a) => a.cancelled && !BOOKED.some((b) => sameSlot(b, a)),
+      )
+      const prevOpen = (d) => {
+        d--
+        while (d > 0 && !isOpen(d)) d--
+        return Math.max(d, 0)
+      }
+
+      /* front-desk time no task may use: lunch (14:00 to 14:45), the first patient arriving (from the brief) and check-in around each booking */
+      function blocksFor(d) {
+        if (!isOpen(d)) return []
+        const b = BOOKED.filter((a) => a.day === d).map((a) => ({
+          start: hm(a.time) - 5,
+          end: hm(a.time) + 5,
+          label: `Check-in: ${a.who}`,
+        }))
+        b.push({ start: 840, end: 885, label: 'Lunch break', lunch: true })
+        if (d === 0)
+          b.push({
+            start: 510,
+            end: 520,
+            label: 'First patient arrives (8:30)',
+          })
+        return b.sort((x, y) => x.start - y.start)
+      }
+
+      /* ---------- the final pass ----------
+   Runs before opening and re-runs every minute, so it never offers a slot that has already gone.
+   It re-reads the call log, finds Jade's mistakes and writes the corrected tasks. */
+      const nowAbs = () => S.day * 1440 + Math.floor(S.min)
+      /* what each "no availability" caller asked for, read from the call summaries (a live Jade would record this) */
+      const WANT = {
+        'David Miller': { label: 'any time this week', from: 0, to: 4 },
+        'Chris Martin': { label: 'Monday or Tuesday', from: 0, to: 1 },
+        'Grace Scott': {
+          label: 'any time before the end of the month',
+          from: 0,
+          to: 13,
+        },
+      }
+
+      function buildTasks() {
+        const out = [],
+          fixes = [],
+          checks = [],
+          taken = new Set(),
+          claims = {}
+        const key = (s) => `${s.day}|${s.time}|${s.prac}`
+        const free = FREED.filter((s) => slotAbs(s) > nowAbs()).sort(
+          (a, b) => slotAbs(a) - slotAbs(b),
+        )
+        const claim = (s, who) => {
+          if (s && !s.derived) {
+            taken.add(key(s))
+            claims[key(s)] = who
+          }
+          return s
+        }
+        const tag = (s, me) =>
+          s.derived
+            ? ' (not in the booked list, check the diary first)'
+            : claims[key(s)] && claims[key(s)] !== me
+              ? ` (first offered to ${claims[key(s)].split(' ')[0]})`
+              : ' (freed by a cancellation)'
+        const say = (me, f, b) =>
+          f
+            ? `Offer ${slotTxt(f)}${tag(f, me)}.${b ? ` If that doesn't suit: ${slotTxt(b)}${tag(b, me)}.` : ''}`
+            : 'No free slot is known right now, so add them to the waitlist and check the diary.'
+        const T = (id, who, cat, pri, due, text, x = {}) =>
+          out.push({
+            id,
+            who,
+            mood: moodOf(who),
+            cat,
+            pri,
+            due,
+            text,
+            call: ids(who),
+            ...x,
+          })
+        /* unconfirmed openings around a preferred time, same practitioner and time of day */
+        const nearby = (o) => {
+          const t0 = hm(o.time),
+            t = Math.min(Math.max(t0, OPEN), CLOSE - 30),
+            r = []
+          for (let d = o.minDay; d <= o.ref + 10; d++) {
+            if (!isOpen(d)) continue
+            const s = { day: d, time: hhmm(t), prac: o.prac, derived: true }
+            if (
+              slotAbs(s) <= nowAbs() ||
+              BOOKED.some((b) => sameSlot(b, s)) ||
+              FREED.some((f) => sameSlot(f, s))
+            )
+              continue
+            r.push({
+              ...s,
+              score: Math.abs(d - o.ref) + Math.abs(t - t0) / 120,
+            })
+          }
+          return r
+        }
+        const best = (o) => {
+          const c = nearby(o)
+          free
+            .filter((s) => s.day >= o.minDay && !taken.has(key(s)))
+            .forEach((s) =>
+              c.push({
+                ...s,
+                score:
+                  Math.abs(s.day - o.ref) +
+                  Math.abs(hm(s.time) - hm(o.time)) / 120 +
+                  (s.prac === o.prac ? 0 : 1.5) -
+                  0.75,
+              }),
+            )
+          return c
+            .sort((a, b) => a.score - b.score || a.day - b.day)
+            .slice(0, 2)
+        }
+
+        /* 1. urgent call that was never booked: first in line for the earliest slot */
+        const urgentNoBooking = CALLS.filter(
+          (c) => c.outcome === 'urgent_flagged' && !c.appointment,
+        )
+        urgentNoBooking.forEach((c) => {
+          const n = c.caller_name
+          const f = claim(
+              free.find((s) => !taken.has(key(s))),
+              n,
+            ),
+            b =
+              free.find((s) => s !== f && !taken.has(key(s))) ||
+              free.find((s) => s !== f)
+          T(
+            slug(n),
+            n,
+            'triage',
+            1,
+            0,
+            `Urgent overnight call and nobody has rung back yet. ${say(n, f, b)}`,
+          )
+          fixes.push(
+            `<b>${n}</b> had an urgent call but was never booked. First in line for ${f ? slotTxt(f) : 'the earliest slot (none known, check the diary)'}.`,
+          )
+        })
+
+        /* 2. Jade's "priority" flag on a booking whose own note shows no urgency, while a real urgent call had no booking */
+        const overTriaged = CALLS.filter(
+          (c) => c.flagged === 'priority' && /not painful/i.test(c.summary),
+        )
+        overTriaged.forEach((c) => {
+          const n = c.caller_name,
+            b = BOOKED.find((a) => a.who === n),
+            down = urgentNoBooking.length > 0
+          T(
+            slug(n),
+            n,
+            'confirm',
+            down ? 3 : 1,
+            0,
+            `Confirm ${dlabel(b.day)} ${b.time} with ${b.prac}.${down ? " The final pass removed Jade's priority flag: nothing in the call suggests urgency, and the urgent call outranks it." : ''}`,
+            { exp: slotAbs(b) },
+          )
+          if (down)
+            fixes.push(
+              `<b>${n}</b> was flagged priority ahead of the urgent call. Priority flag removed, booking kept.`,
+            )
+        })
+
+        /* 3. told "no availability" while cancelled slots were open (mistake 1) */
+        const missed = CALLS.filter((c) => c.outcome === 'no_availability')
+        const names = [...new Set(missed.map((c) => c.caller_name))].sort(
+          (a, b) =>
+            BOOKED.some((x) => x.who === a) - BOOKED.some((x) => x.who === b),
+        )
+        const assigns = []
+        names.forEach((n) => {
+          const w = WANT[n] || {
+              label: 'as soon as possible',
+              from: 0,
+              to: 13,
+            },
+            me = BOOKED.find((a) => a.who === n)
+          const cand = free.filter((s) => s.day >= w.from && s.day <= w.to)
+          const f = cand.find((s) => !taken.has(key(s))),
+            b =
+              cand.find((s) => s !== f && !taken.has(key(s))) ||
+              cand.find((s) => s !== f)
+          const lost = callsOf(n).some((c) => c.flagged === 'lost_opportunity')
+          assigns.push(`${n.split(' ')[0]}: ${f ? slotTxt(f) : 'waitlist'}`)
+          if (!me) {
+            T(
+              slug(n),
+              n,
+              lost ? 'winback' : 'offer',
+              2,
+              0,
+              `Asked for ${w.label}. ` +
+                (f
+                  ? say(n, claim(f, n), b)
+                  : cand.length
+                    ? `Every open slot in that window is already offered to someone else (${cand.map(slotTxt).join(', ')}). Add them to the waitlist and check the diary.`
+                    : 'No free slot is known in that window. Add them to the waitlist and check the diary.'),
+            )
+          } else {
+            T(
+              slug(n),
+              n,
+              'offer',
+              3,
+              0,
+              `Asked for ${w.label} ${callsOf(n).length} times before settling on ${dlabel(me.day)} ${me.time}. Apologise and confirm it. ` +
+                (f
+                  ? `Offer ${slotTxt(claim(f, n))}${tag(f, n)} if they still want an earlier slot.`
+                  : 'The earlier openings are already offered to others.'),
+            )
+          }
+        })
+        if (missed.length) {
+          const open = missed.map(
+            (c) =>
+              FREED.filter(
+                (s) => s.madeAt < callAbs(c) && slotAbs(s) > callAbs(c),
+              ).length,
+          )
+          fixes.push(
+            `<b>${names.length} callers</b> (${missed.length} calls) were told there was no availability while up to ${Math.max(...open)} cancelled slots were open. Offers now: ${assigns.join('; ')}.`,
+          )
+        }
+
+        /* 4. bookings on a closed day or at closing time (mistakes 6 and 7) */
+        BOOKED.filter((a) => a.warn).forEach((a) => {
+          const closed = a.warn.includes('closed')
+          const [x, y] = best({
+            prac: a.prac,
+            time: a.time,
+            ref: a.day,
+            minDay: 0,
+          })
+          claim(x, a.who)
+          claim(y, a.who)
+          T(
+            slug(a.who),
+            a.who,
+            'bookfix',
+            closed ? 2 : 4,
+            0,
+            `Booked ${dlabel(a.day)} ${a.time}, ${closed ? 'a day the clinic is closed' : 'right at closing time'}. ${say(a.who, x, y)}`,
+          )
+          fixes.push(
+            `<b>${a.who}</b> was booked ${closed ? 'on a closed day' : 'at closing time'} (${dlabel(a.day)} ${a.time}). Two alternatives ready${closed ? '' : ', low priority'}.`,
+          )
+        })
+
+        /* 5. cancellations that want to rebook (mistake 10); anyone who already rebooked is left alone */
+        CALLS.filter(
+          (c) => c.appointment && c.appointment.action === 'cancelled',
+        ).forEach((c) => {
+          const n = c.caller_name,
+            a = APPTS.find((x) => x.cid === c.id)
+          if (BOOKED.some((b) => b.who === n && b.madeAt > a.madeAt)) {
+            checks.push(`${n.split(' ')[0]} cancelled and already rebooked`)
+            return
+          }
+          if (!(
+            c.flagged === 'rebook_requested' ||
+            /call back.*rebook/i.test(c.summary)
+          ))
+            return
+          const due = /next week/i.test(c.summary) ? 7 : 0
+          const orig =
+            due === 0
+              ? free.find((s) => s.cid === a.cid && !taken.has(key(s)))
+              : null
+          let f, b
+          if (orig) {
+            f = claim(orig, n)
+            b = best({ prac: a.prac, time: a.time, ref: a.day, minDay: 0 })[0]
+          } else {
+            ;[f, b] = best({
+              prac: a.prac,
+              time: a.time,
+              ref: due || a.day,
+              minDay: due,
+            })
+            claim(f, n)
+          }
+          const t = say(n, f, b)
+          T(
+            slug(n),
+            n,
+            'rebook',
+            4,
+            due,
+            `Cancelled ${dlabel(a.day)} ${a.time} and wants to rebook${due ? ', and asked for a call next week' : ''}. ` +
+              (orig ? t.replace('Offer ', 'Offer their original slot, ') : t),
+          )
+          fixes.push(
+            `<b>${n}</b> cancelled and wants to rebook. Low-priority callback${due ? ' next week, as they asked,' : ''} with ${orig ? 'their original slot first' : 'two alternatives'}.`,
+          )
+        })
+
+        /* 6. referral Jade promised for a service the clinic doesn't offer (mistake 10) */
+        CALLS.filter((c) => c.flagged === 'service_not_offered').forEach(
+          (c) => {
+            const n = c.caller_name,
+              f = n.split(' ')[0]
+            T(
+              slug(n),
+              n,
+              'referral',
+              4,
+              0,
+              `Jade told ${f} the practice would call back with a referral, but the clinic doesn't offer this. Later today, ring a local specialist clinic, ask if they take referrals, and ask them to call ${f} back (number is on this card).`,
+              { after: 14 * 60 },
+            )
+            fixes.push(
+              `<b>${n}</b> was promised a referral callback. Now a low-priority task after 14:00: call a specialist clinic and ask them to ring back.`,
+            )
+          },
+        )
+
+        /* everything else from the flags */
+        ;[
+          ...new Set(
+            CALLS.filter((c) => c.flagged === 'complaint').map(
+              (c) => c.caller_name,
+            ),
+          ),
+        ].forEach((n) =>
+          T(
+            slug(n),
+            n,
+            'complaint',
+            1,
+            0,
+            `Call back about the invoice dispute. ${callsOf(n).length} calls so far and no callback since Friday evening. Apologise first and say when they will hear back.`,
+          ),
+        )
+        CALLS.filter((c) => c.flagged === 'bad_data').forEach((c) => {
+          const n = c.caller_name
+          T(
+            slug(n),
+            n,
+            'datafix',
+            2,
+            0,
+            'The callback number Jade captured is too short and was never read back. Call or text the number they rang from, confirm it, and book their first visit.',
+          )
+        })
+        CALLS.filter((c) => c.flagged === 'note_for_practitioner').forEach(
+          (c) => {
+            const n = c.caller_name,
+              b = BOOKED.find((a) => a.who === n)
+            T(
+              slug(n),
+              n,
+              'note',
+              3,
+              0,
+              `Add the practitioner note to their chart before ${dlabel(b.day)} ${b.time} with ${b.prac}.`,
+            )
+          },
+        )
+        BOOKED.filter(
+          (a) => !a.warn && !overTriaged.some((c) => c.caller_name === a.who),
+        ).forEach((a) =>
+          T(
+            'rem-' + slug(a.who),
+            a.who,
+            'remind',
+            4,
+            prevOpen(a.day),
+            `Send a reminder for ${a.time} ${a.type} on ${dlabel(a.day)} (${a.prac}).`,
+            { call: '', exp: slotAbs(a) },
+          ),
+        )
+
+        let dbl = 0
+        BOOKED.forEach((a, i) =>
+          BOOKED.slice(i + 1).forEach((b) => {
+            if (sameSlot(a, b)) dbl++
+          }),
+        )
+        const log = fixes.map((d) => ({ fix: 1, d }))
+        log.push({
+          fix: 0,
+          d: `<b>Checked, nothing to fix:</b> ${dbl} double-bookings; ${checks.length ? checks.join('; ') + '; ' : ''}no other bookings outside opening hours.`,
+        })
+        return {
+          tasks: out.map((t, i) => ({
+            ...t,
+            min: t.min || CATS[t.cat].min,
+            ord: i,
+          })),
+          log,
+        }
+      }
+      let TASKS = [],
+        PASS = []
+
+      /* ---------- state ---------- */
+      const KEY = 'callhero.calendar.v2'
+      /* live clock: real time of day in the clinic's timezone, held between opening and closing */
+      const sydMin = () => {
+        const p = new Intl.DateTimeFormat('en-AU', {
+          timeZone: 'Australia/Sydney',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hourCycle: 'h23',
+        }).formatToParts(new Date())
+        const g = (t) => Number(p.find((x) => x.type === t).value)
+        return g('hour') * 60 + g('minute') + g('second') / 60
+      }
+      const liveMin = () => Math.min(CLOSE, Math.max(OPEN, sydMin()))
+      const S = {
+        day: 0,
+        min: liveMin(),
+        mode: 'live',
+        speed: 0,
+        sel: 0,
+        done: {},
+        tags: {},
+        prev: {},
+      }
+      try {
+        const j = JSON.parse(localStorage.getItem(KEY) || 'null')
+        if (j && typeof j === 'object') {
+          S.sel = j.sel | 0
+          S.done = j.done || {}
+          if (j.mode === 'demo') {
+            S.mode = 'demo'
+            S.day = j.day | 0
+            S.min = +j.min || OPEN
+          }
+        }
+      } catch (e) {}
+      const save = () => {
+        try {
+          localStorage.setItem(
+            KEY,
+            JSON.stringify({
+              mode: S.mode,
+              day: S.day,
+              min: S.min,
+              sel: S.sel,
+              done: S.done,
+            }),
+          )
+        } catch (e) {}
+      }
+
+      /* ---------- the scheduler ----------
+   Walk the open days from today. Each hour bucket has 60 minutes (only what is left of it, for the current hour).
+   Fill it with the highest-priority pending task that still fits the time left, the hour's budget (30 min,
+   stretching by priority), its tier (see below) and the front-desk blocks; a smaller lower-priority task may take a gap a bigger one can't.
+   What doesn't fit rolls to the next hour, then the next open day. Tasks can wait for an earliest hour (after)
+   or expire (an appointment reminder is pointless once the appointment has started). */
+      /* Urgent and High own the first hour. Normal and Low wait for the hours after it ("if she has time").
+   Once every Urgent/High task due today is ticked, she is ahead: the walk-in buffer lifts and Normal/Low
+   tasks that fit move up into what is left of the current hour, one by one as she ticks. */
+      const highClear = () =>
+        !TASKS.some(
+          (t) =>
+            t.pri <= 2 &&
+            !S.done[t.id] &&
+            t.due <= S.day &&
+            (!t.exp || t.exp > nowAbs()),
+        )
+      function plan() {
+        const hours = {},
+          where = {}
+        const ahead = highClear()
+        let pool = TASKS.filter((t) => !S.done[t.id]).sort(
+          (a, b) => a.pri - b.pri || a.due - b.due || a.ord - b.ord,
+        )
+        const now = Math.floor(S.min)
+        for (let d = S.day; d <= LAST && pool.length; d++) {
+          if (!isOpen(d)) continue
+          const start = d === S.day ? Math.max(now, OPEN) : OPEN,
+            blocks = blocksFor(d)
+          pool = pool.filter((t) => !t.exp || t.exp > d * 1440 + start)
+          hours[d] = {}
+          const first = Math.floor(start / 60),
+            lowFrom = d === S.day && ahead ? first : first + 1
+          for (let h = first; h < CLOSE / 60; h++) {
+            let cur = Math.max(start, h * 60)
+            const end = (h + 1) * 60,
+              list = (hours[d][h] = [])
+            const hit = (s, e) => blocks.some((b) => s < b.end && e > b.start)
+            for (;;) {
+              const used = list.reduce((n, x) => n + x.t.min, 0)
+              const cap = (t) =>
+                t.pri >= 3 && d === S.day && ahead && h === first
+                  ? 60
+                  : CEIL[t.pri]
+              const i = pool.findIndex(
+                (t) =>
+                  t.due <= d &&
+                  (t.pri <= 2 || h >= lowFrom) &&
+                  (t.after || 0) <= h * 60 &&
+                  cur + t.min <= end &&
+                  used + t.min <= cap(t) &&
+                  !hit(cur, cur + t.min),
+              )
+              if (i >= 0) {
+                const [t] = pool.splice(i, 1)
+                list.push({ t, start: cur, end: cur + t.min })
+                where[t.id] = { day: d, hour: h }
+                cur += t.min
+                continue
+              }
+              const nb = blocks.find((b) => b.end > cur && b.start < end)
+              if (!nb) break
+              cur = Math.max(cur, nb.end)
+              if (cur >= end) break
+            }
+          }
+        }
+        return { hours, where }
+      }
+
+      /* ---------- rendering ---------- */
+      const $ = (id) => document.getElementById(id)
+      const mood = (m) =>
+        `<span class="mood" title="${MOOD[m].label}: ${MOOD[m].tip}" aria-label="${MOOD[m].label}">${MOOD[m].e}</span>`
+
+      function taskCard(t, o) {
+        const c = PRI[t.pri],
+          cat = CATS[t.cat],
+          tag = S.tags[t.id]
+        const carried =
+          o.day > t.due && !o.done
+            ? `<span class="tag carry">carried from ${dlabel(t.due)}</span>`
+            : ''
+        const mv =
+          tag && !o.done
+            ? `<span class="tag ${tag.dir === 'up' ? 'up' : 'dn'}">${tag.dir === 'up' ? 'pulled forward' : 'pushed back'}</span>`
+            : ''
+        const opt = o.opt
+          ? '<span class="tag carry">if she has time</span>'
+          : ''
+        const when = o.done
+          ? `done ${fmt(S.done[t.id].at)}`
+          : `${fmt(o.start)}–${fmt(o.end)}`
+        return `<div class="card task k-${c.k}${o.done ? ' isdone' : ''}${o.next ? ' next' : ''}${tag && !o.done ? ' flash' : ''}">
+   <label class="cb"><input type="checkbox" data-id="${t.id}" ${o.done ? 'checked' : ''} ${o.locked ? 'disabled' : ''} aria-label="Mark done: ${t.who}, ${cat.label}"><span class="box"></span></label>
+   <span class="tx">
+    <span class="ln1"><b>${t.who}</b> ${mood(t.mood)} <span class="pill p">${c.name}</span> ${tel(t.who)}${o.next ? ' <span class="tag">next</span>' : ''}${mv}${carried}${opt}</span>
+    <span class="ln2">${t.text}</span>
+    <span class="ln3"><span class="time">${when}</span> · ${cat.label} · ${t.min} min${t.call ? ` · call ${t.call}` : ''}</span>
+   </span></div>`
+      }
+      function apptCard(a) {
+        const showMood = a.mood !== 'casual' && !a.cancelled
+        return `<div class="card appt k-g${a.cancelled ? ' cancelled' : ''}">
+   <span class="tx"><span class="ln1"><b>${a.who}</b> ${showMood ? mood(a.mood) : ''}${a.cancelled ? '<span class="tag carry">cancelled, slot free</span>' : '<span class="pill p">Booking</span>'} ${tel(a.who)}${a.warn ? `<span class="warn">⚠ ${a.warn}</span>` : ''}</span>
+   <span class="ln3"><span class="time">${a.time}</span> · ${a.type} · ${a.prac}${a.note ? ` · ${a.note}` : ''}</span></span></div>`
+      }
+
+      function renderStatic(d) {
+        if (!isOpen(d) && !APPTS.some((a) => a.day === d))
+          return `<div class="closedmsg">Clinic closed. No bookings.</div>`
+        let out = ''
+        for (let h = 8; h <= 17; h++) {
+          const list = APPTS.filter(
+            (a) => a.day === d && Math.floor(hm(a.time) / 60) === h,
+          ).sort((a, b) => hm(a.time) - hm(b.time))
+          if (h === 17 && !list.length) continue
+          out += `<div class="hr"><div class="hl"><b>${h}:00</b></div><div class="hb">${list.length ? list.map(apptCard).join('') : '<span class="empty">No bookings</span>'}</div></div>`
+        }
+        return out
+      }
+
+      function blockCard(b) {
+        return `<div class="card block"><span class="tx"><span class="ln1"><b>${b.label}</b></span>
+   <span class="ln3"><span class="time">${fmt(b.start)}–${fmt(b.end)}</span> · ${b.lunch ? 'no tasks' : 'front desk, no tasks here'}</span></span></div>`
+      }
+
+      function render() {
+        const built = buildTasks()
+        TASKS = built.tasks
+        PASS = built.log
+        const P = plan(),
+          ahead = highClear(),
+          now = Math.floor(S.min),
+          d = S.sel,
+          today = d === S.day
+
+        // moved tags: compare hour bucket with the previous plan
+        const stamp = Date.now()
+        for (const id in P.where) {
+          const w = P.where[id],
+            p = S.prev[id]
+          if (p && (p.day !== w.day || p.hour !== w.hour)) {
+            const before = p.day * 100 + p.hour,
+              after = w.day * 100 + w.hour
+            S.tags[id] = {
+              dir: after < before ? 'up' : 'dn',
+              until: stamp + 9000,
+            }
+          }
+        }
+        S.prev = P.where
+        for (const id in S.tags) if (S.tags[id].until < stamp) delete S.tags[id]
+
+        $('clk').textContent = `${dlabel(S.day)} ${fmt(now)}`
+        if (S.mode === 'demo') $('clock').classList.remove('hidden')
+        $('play').textContent = S.speed ? 'Pause' : 'Play'
+        $('play').setAttribute('aria-pressed', S.speed ? 'true' : 'false')
+        document
+          .querySelectorAll('[data-speed]')
+          .forEach((b) =>
+            b.classList.toggle('on', +b.dataset.speed === S.speed),
+          )
+
+        // stats for today
+        const todayTasks = TASKS.filter(
+          (t) =>
+            (S.done[t.id] && S.done[t.id].day === S.day) ||
+            (P.where[t.id] && P.where[t.id].day === S.day),
+        )
+        const doneN = TASKS.filter(
+          (t) => S.done[t.id] && S.done[t.id].day === S.day,
+        ).length
+        const pend = Object.values(P.hours[S.day] || {}).flat()
+        const left = pend.reduce((s, x) => s + x.t.min, 0)
+        const finish = pend.length ? Math.max(...pend.map((x) => x.end)) : null
+        const urgentLeft = pend.filter((x) => x.t.pri <= 2).length
+        const rolled = TASKS.filter(
+          (t) =>
+            !S.done[t.id] &&
+            P.where[t.id] &&
+            P.where[t.id].day > S.day &&
+            t.due <= S.day,
+        ).length
+        $('stats').innerHTML = [
+          [`${doneN} / ${todayTasks.length}`, 'tasks done today'],
+          [urgentLeft, 'urgent + high tasks left'],
+          [`${left} min`, 'work left today'],
+          [finish ? fmt(finish) : '—', 'projected finish'],
+          [rolled, 'rolled to a later day'],
+        ]
+          .map(([b, s]) => `<div class="st"><b>${b}</b><span>${s}</span></div>`)
+          .join('')
+
+        // day strip
+        $('days').innerHTML = Array.from({ length: DAYS }, (_, i) => {
+          const ap = APPTS.filter((a) => a.day === i && !a.cancelled).length
+          const ts = (
+            P.hours[i]
+              ? Object.values(P.hours[i])
+                  .flat()
+                  .map((x) => x.t)
+              : []
+          ).concat(TASKS.filter((t) => S.done[t.id] && S.done[t.id].day === i))
+          const top = ts
+            .filter((t) => !S.done[t.id])
+            .reduce((m, t) => Math.min(m, t.pri), 9)
+          const dot = top < 9 ? `<span class="dot k-${PRI[top].k}"></span>` : ''
+          return `<button class="day k-${top < 9 ? PRI[top].k : 'n'}${isOpen(i) ? '' : ' closed'}${i === S.sel ? ' sel' : ''}${i === S.day ? ' today' : ''}" data-day="${i}" role="tab" aria-selected="${i === S.sel}">
+      <small>${wd(i)}</small><b>${dnum(i)}</b><span class="ct">${dot}${ts.length} task${ts.length === 1 ? '' : 's'}${ap ? ` · ${ap} appt` : ''}</span></button>`
+        }).join('')
+
+        // hour grid
+        let html = ''
+        if (!isOpen(d))
+          html += `<div class="closedmsg">Clinic closed. No tasks are scheduled on ${wd(d)}.</div>`
+        const BLK = blocksFor(d)
+        const dayFirst = (
+          Object.values(P.hours[d] || {})
+            .flat()
+            .sort((a, b) => a.start - b.start)[0] || {}
+        ).t
+        for (let h = 8; h <= 17; h++) {
+          const items = []
+          TASKS.filter(
+            (t) =>
+              S.done[t.id] &&
+              S.done[t.id].day === d &&
+              Math.floor(S.done[t.id].at / 60) === h,
+          ).forEach((t) =>
+            items.push({
+              k: S.done[t.id].at,
+              html: taskCard(t, { done: true, day: d, locked: d !== S.day }),
+            }),
+          )
+          const placed = (P.hours[d] && P.hours[d][h]) || []
+          placed.forEach((x) =>
+            items.push({
+              k: x.start,
+              html: taskCard(x.t, {
+                day: d,
+                start: x.start,
+                end: x.end,
+                locked: d !== S.day,
+                next: today && x.t === dayFirst,
+                opt: today && x.t.pri >= 3 && !ahead,
+              }),
+            }),
+          )
+          BLK.filter(
+            (b) => Math.floor(Math.max(b.start, OPEN) / 60) === h,
+          ).forEach((b) => items.push({ k: b.start, html: blockCard(b) }))
+          if (h === 17 && !items.length) continue
+          if (!isOpen(d) && !items.length) continue
+          const isNow = today && h === Math.floor(now / 60),
+            past = d < S.day || (today && h < Math.floor(now / 60))
+          const from = isNow ? now : h * 60,
+            cap = Math.max(0, (h + 1) * 60 - from),
+            used = placed.reduce((s, x) => s + x.t.min, 0)
+          const seg = placed
+            .map(
+              (x) =>
+                `<i class="k-${PRI[x.t.pri].k}" style="width:${(x.t.min / 60) * 100}%"></i>`,
+            )
+            .join('')
+          const capTxt =
+            h === 17
+              ? 'closing time'
+              : !isOpen(d)
+                ? ''
+                : past
+                  ? 'past'
+                  : (() => {
+                      const lunch = BLK.filter((b) => b.lunch).reduce(
+                        (n, b) =>
+                          n +
+                          Math.max(
+                            0,
+                            Math.min(b.end, (h + 1) * 60) -
+                              Math.max(b.start, from),
+                          ),
+                        0,
+                      )
+                      return `${used} min planned · ${Math.max(0, cap - used - lunch)} min free for walk-ins${lunch ? ` · ${lunch} min lunch` : ''}`
+                    })()
+          items.sort((a, b) => a.k - b.k)
+          html += `<div class="hr${isNow ? ' now' : ''}${past ? ' past' : ''}"><div class="hl"><b>${h}:00</b><span class="cap">${capTxt}</span>${h < 17 && isOpen(d) && !past ? `<div class="bar">${seg}</div>` : ''}</div>
+      <div class="hb">${items.length ? items.map((i) => i.html).join('') : '<span class="empty">Nothing planned</span>'}</div></div>`
+        }
+        $('grid').innerHTML = html
+        $('gridS').innerHTML = renderStatic(d)
+        const nfix = PASS.filter((x) => x.fix).length
+        $('passSum').textContent =
+          `Final pass, ran before opening: ${nfix} correction${nfix === 1 ? '' : 's'} to Jade's work`
+        $('passBody').innerHTML =
+          `<ul>${PASS.map((x) => `<li class="${x.fix ? '' : 'ok'}">${x.d}</li>`).join('')}</ul>`
+        save()
+      }
+
+      /* ---------- interaction ---------- */
+      $('grid').addEventListener('change', (e) => {
+        const id = e.target.dataset && e.target.dataset.id
+        if (!id) return
+        if (e.target.checked) S.done[id] = { day: S.day, at: Math.floor(S.min) }
+        else delete S.done[id]
+        render()
+      })
+      $('days').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-day]')
+        if (b) {
+          S.sel = +b.dataset.day
+          render()
+        }
+      })
+      const demo = () => {
+        S.mode = 'demo'
+      }
+      $('demoBtn').onclick = () => {
+        const c = $('clock')
+        c.classList.toggle('hidden')
+        $('demoBtn').setAttribute(
+          'aria-expanded',
+          String(!c.classList.contains('hidden')),
+        )
+      }
+      $('play').onclick = () => {
+        demo()
+        S.speed = S.speed ? 0 : 5
+        render()
+      }
+      document.querySelectorAll('[data-speed]').forEach(
+        (b) =>
+          (b.onclick = () => {
+            demo()
+            S.speed = +b.dataset.speed
+            render()
+          }),
+      )
+      document.querySelectorAll('[data-jump]').forEach(
+        (b) =>
+          (b.onclick = () => {
+            demo()
+            S.min = Math.min(CLOSE, S.min + +b.dataset.jump)
+            render()
+          }),
+      )
+      $('nextday').onclick = () => {
+        let d = S.day + 1
+        while (!isOpen(d)) d++
+        if (d >= DAYS) return
+        demo()
+        S.day = S.sel = d
+        S.min = OPEN
+        S.speed = 0
+        render()
+      }
+      const goLive = () => {
+        S.mode = 'live'
+        S.speed = 0
+        S.day = S.sel = 0
+        S.min = liveMin()
+      }
+      $('golive').onclick = () => {
+        goLive()
+        render()
+      }
+      $('reset').onclick = () => {
+        goLive()
+        S.done = {}
+        S.tags = {}
+        S.prev = {}
+        render()
+      }
+      let lastMin = -1
+      setInterval(() => {
+        if (S.mode === 'live') S.min = liveMin()
+        else if (S.speed && S.min < CLOSE) {
+          S.min = Math.min(CLOSE, S.min + S.speed * 0.25)
+          if (S.min >= CLOSE) S.speed = 0
+        }
+        const m = Math.floor(S.min),
+          stale = Object.values(S.tags).some((t) => t.until < Date.now())
+        if (m !== lastMin || stale) {
+          lastMin = m
+          render()
+        }
+      }, 250)
+
+      /* tabs */
+      function tab(which) {
+        const cal = which === 'cal'
+        $('p-cal').classList.toggle('hidden', !cal)
+        $('p-tbl').classList.toggle('hidden', cal)
+        $('tab-cal').setAttribute('aria-selected', cal)
+        $('tab-tbl').setAttribute('aria-selected', !cal)
+      }
+      $('tab-cal').onclick = () => tab('cal')
+      $('tab-tbl').onclick = () => tab('tbl')
+
+      /* legends */
+      $('lg').innerHTML =
+        Object.entries(PRI)
+          .map(([n, p]) => `<span class="lg k-${p.k}">P${n} ${p.name}</span>`)
+          .join('') +
+        `<span class="lg k-g">Booking (fixed)</span>` +
+        Object.values(MOOD)
+          .map(
+            (m) =>
+              `<span class="mlg">${m.e} <b>${m.label}</b>: ${m.tip}</span>`,
+          )
+          .join('')
+      $('mlg').innerHTML = Object.values(MOOD)
+        .map(
+          (m) => `<span class="mlg">${m.e} <b>${m.label}</b>: ${m.tip}</span>`,
+        )
+        .join('')
+
+      /* ---------- every-caller table ---------- */
+      /* [person, mood, calls, reason, what Jade did, urgent?, booked / review on] */
+      const G = [
+        [
+          'r',
+          'Urgent',
+          [
+            [
+              'Peter Young',
+              'nicer',
+              1,
+              'Urgent call at 2:14am',
+              'Advised emergency department if genuine emergency, took details, flagged for Monday',
+              1,
+              'Review Mon 17 Nov, first thing',
+            ],
+            [
+              'Michael Brown',
+              'nicer',
+              2,
+              'Billing dispute (complaint)',
+              'Took a message both times. No callback since Friday evening.',
+              1,
+              'Review Mon 17 Nov, today',
+            ],
+          ],
+        ],
+        [
+          'o',
+          'Needs a callback or action',
+          [
+            [
+              'Grace Scott',
+              'nicer',
+              2,
+              'New patient, wants a slot before month end',
+              'Nothing available twice, took details for the waitlist',
+              0,
+              'Review Mon 17 Nov',
+            ],
+            [
+              'David Miller',
+              'nicer',
+              1,
+              'New patient, wanted a slot this week',
+              'Nothing available. He said he would try somewhere else.',
+              0,
+              'Review Mon 17 Nov',
+            ],
+            [
+              'Rachel Lewis',
+              'nicer',
+              1,
+              'Cancelled Tue 11:00 (family emergency)',
+              'Cancelled it, noted she wants a call to rebook',
+              0,
+              'Cancelled Tue 18 Nov 11:00. Low-priority rebook call Mon 24 Nov',
+            ],
+            [
+              'Natalie Evans',
+              'normal',
+              1,
+              'Cancelled Thu 14:00 (travelling)',
+              'Cancelled it, she will call back to rebook',
+              0,
+              'Cancelled Thu 20 Nov 14:00. Low-priority rebook call Mon 17 Nov',
+            ],
+            [
+              'Daniel Clark',
+              'normal',
+              1,
+              'Asked about orthodontics (not offered)',
+              'Took a message, said the practice will call with a referral',
+              0,
+              'Low priority, after 14:00 Mon 17 Nov',
+            ],
+            [
+              'James Anderson',
+              'normal',
+              1,
+              'New patient wanting a first booking',
+              'Captured a number one digit short, call dropped before confirming',
+              0,
+              'Review Mon 17 Nov',
+            ],
+          ],
+        ],
+        [
+          'g',
+          'Booked or rescheduled',
+          [
+            [
+              'John Smith',
+              'casual',
+              1,
+              'New patient, check-up and clean',
+              'Booked with Dr Foster',
+              0,
+              'Booked Wed 19 Nov, 14:30',
+            ],
+            [
+              'Sarah Johnson',
+              'casual',
+              2,
+              'Cancelled, then rebooked',
+              'Cancelled Mon 17 Nov 9:00 on Friday. Rebooked on Monday.',
+              0,
+              'Booked Thu 27 Nov, 9:00',
+            ],
+            [
+              'Emily Davis',
+              'casual',
+              1,
+              'New patient, wants a regular dentist',
+              'Booked with Dr Bennett',
+              0,
+              'Booked Thu 20 Nov, 10:00',
+            ],
+            [
+              'Jessica Wilson',
+              'casual',
+              1,
+              'Existing patient, bring check-up forward',
+              'Booked with Dr Foster',
+              0,
+              'Booked Fri 21 Nov, 16:00',
+            ],
+            [
+              'Laura Thomas',
+              'casual',
+              1,
+              "New patient, children's check-up (her son)",
+              'Booked with Dr Bennett',
+              0,
+              "Booked Sat 22 Nov, 9:30 <span class='warn'>⚠ closed day, final pass suggests two alternatives</span>",
+            ],
+            [
+              'Chris Martin',
+              'nicer',
+              3,
+              'New patient, wanted Monday or Tuesday',
+              'Nothing available twice, booked on the third call with Dr Foster',
+              0,
+              'Booked Thu 20 Nov, 15:30',
+            ],
+            [
+              'Emma Hall',
+              'casual',
+              1,
+              'Existing patient, routine clean',
+              'Booked with Dr Bennett',
+              0,
+              'Booked Tue 25 Nov, 8:30',
+            ],
+            [
+              'Olivia King',
+              'casual',
+              1,
+              'New patient by referral, check-up and whitening',
+              'Booked with Dr Foster',
+              0,
+              'Booked Mon 24 Nov, 11:00',
+            ],
+            [
+              'Sophie Wright',
+              'nicer',
+              1,
+              'New patient, note for practitioner',
+              'Booked with Dr Bennett and passed the note on',
+              0,
+              'Booked Wed 26 Nov, 13:00. Chart note Mon 17 Nov',
+            ],
+            [
+              'Andrew Green',
+              'casual',
+              1,
+              'Existing patient, reschedule',
+              "Moved to Dr Foster's Friday slot",
+              0,
+              'Booked Fri 21 Nov, 10:30',
+            ],
+            [
+              'Hannah Moore',
+              'casual',
+              1,
+              'Existing patient, routine booking',
+              'Booked with Dr Bennett',
+              0,
+              "Booked Tue 2 Dec, 17:00 <span class='warn'>⚠ closing time, low-priority fix</span>",
+            ],
+            [
+              'Kevin Turner',
+              'normal',
+              1,
+              'New patient, weekend issue',
+              'Booked an assessment with Dr Foster and flagged it priority. The final pass removed the flag.',
+              0,
+              'Booked Tue 18 Nov, 8:00',
+            ],
+          ],
+        ],
+        [
+          'b',
+          'Question answered',
+          [
+            [
+              'Amanda Taylor',
+              'casual',
+              1,
+              'Parking',
+              'Confirmed street parking and the car park two doors down',
+              0,
+              '',
+            ],
+            [
+              'Matthew Walker',
+              'casual',
+              1,
+              'Does the clinic accept HCF?',
+              'Confirmed yes, HICAPS available on site',
+              0,
+              '',
+            ],
+            [
+              'Ryan Baker',
+              'casual',
+              1,
+              'Gap fee for a check-up with HCF',
+              'Gave the standard fee, explained the gap depends on cover',
+              0,
+              '',
+            ],
+          ],
+        ],
+        [
+          'n',
+          'No useful information',
+          [
+            [
+              'Unknown caller',
+              'normal',
+              1,
+              'Unknown',
+              'Caller hung up during the greeting, nothing captured',
+              0,
+              '',
+            ],
+            [
+              'Unknown caller',
+              'normal',
+              1,
+              'Unknown',
+              'Caller hung up during the greeting, nothing captured',
+              0,
+              '',
+            ],
+            [
+              'Unknown caller',
+              'normal',
+              1,
+              'Wrong number (looking for a vet)',
+              'Identified the wrong number, no action',
+              0,
+              '',
+            ],
+          ],
+        ],
+      ]
+      let h = ''
+      for (const [k, t, rows] of G) {
+        h += `<tr class="gh k-${k}"><td colspan="7">${t} (${rows.length})</td></tr>`
+        for (const r of rows)
+          h += `<tr class="row k-${k}"><td class="nm">${r[0]}</td><td class="md">${mood(r[1])} ${MOOD[r[1]].label}</td><td class="c">${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td><span class="pill ${r[5] ? 'yes' : 'no'}">${r[5] ? 'Urgent' : 'Not urgent'}</span></td><td class="dt">${r[6] || '<span class="dash">—</span>'}</td></tr>`
+      }
+      $('tb').innerHTML = h
+      render()
+    </script>
+  </body>
+</html>
