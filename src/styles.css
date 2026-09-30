@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-navy: #102342;
+  --color-navy-2: #17335d;
+  --color-brand: #2467d1;
+}
+
 :root {
   font-family:
     Inter,
@@ -9,8 +15,8 @@
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
-  color: #172033;
-  background: #f4f7f6;
+  color: #14213d;
+  background: #f5f7fb;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -21,6 +27,6 @@ button {
 
 button:focus-visible,
 [role='button']:focus-visible {
-  outline: 3px solid #2dd4bf;
+  outline: 3px solid #2467d1;
   outline-offset: 2px;
 }

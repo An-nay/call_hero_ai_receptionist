@@ -1,7 +1,8 @@
 import { type ReactNode, useMemo, useState } from 'react'
+import { getOpenings, isDone, withoutLastActivity } from '../data/activity'
 import { buildActions, buildCalendarEvents } from '../data/buildDashboardModel'
 import { weekendCalls } from '../data/calls'
-import type { ActionFilter } from '../types/dashboard'
+import type { ActionFilter, ActivityEntry } from '../types/dashboard'
 import { DashboardContext, type DashboardState } from './dashboard-context'
 
 export function DashboardProvider({ children }: { children: ReactNode }) {
@@ -17,12 +18,36 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
 
   const selectedAction = actions.find((item) => item.id === selectedId) ?? null
 
-  const completeAction = (id: string) => {
+  const logActivity = (id: string, entry: Omit<ActivityEntry, 'id' | 'at'>) => {
     setActions((current) =>
-      current.map((item) =>
-        item.id === id ? { ...item, status: 'completed' } : item,
-      ),
+      current.map((item) => {
+        if (item.id !== id) return item
+        const activity = [
+          ...item.activity,
+          {
+            ...entry,
+            id: `${id}-${item.activity.length}`,
+            at: new Date().toISOString(),
+          },
+        ]
+        const next = { ...item, activity }
+        return { ...next, status: isDone(next) ? 'completed' : 'open' }
+      }),
     )
+  }
+
+  const undoLastActivity = (id: string) => {
+    setActions((current) =>
+      current.map((item) => {
+        if (item.id !== id) return item
+        const next = withoutLastActivity(item)
+        return { ...next, status: isDone(next) ? 'completed' : 'open' }
+      }),
+    )
+  }
+
+  const completeAction = (id: string) => {
+    logActivity(id, { type: 'resolved' })
     setSelectedId(null)
   }
 
@@ -32,11 +57,14 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       actions,
       filteredActions,
       calendarEvents: buildCalendarEvents(weekendCalls, actions),
+      openings: getOpenings(weekendCalls, actions),
       filter,
       selectedAction,
       setFilter,
       selectAction: setSelectedId,
       completeAction,
+      logActivity,
+      undoLastActivity,
     }),
     [actions, filter, filteredActions, selectedAction],
   )

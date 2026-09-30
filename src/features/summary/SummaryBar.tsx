@@ -1,52 +1,57 @@
+import { useState } from 'react'
+import { buildSummary } from '../../data/buildSummary'
 import { useDashboard } from '../../state/useDashboard'
 
 export function SummaryBar() {
-  const { data, actions, setFilter } = useDashboard()
-  const open = actions.filter((item) => item.status === 'open')
-  const completed = actions.length - open.length
-  const openings = data.calls.filter(
-    (call) => call.appointment?.action === 'cancelled',
-  ).length
-  const urgent = open.filter((item) => item.priority === 'critical').length
+  const { data, actions } = useDashboard()
+  const [showBrief, setShowBrief] = useState(false)
+  const summary = buildSummary(data, actions)
 
-  const metrics = [
-    {
-      label: 'Calls handled',
-      value: data.calls.length,
-      onClick: () => setFilter('all'),
-    },
-    {
-      label: 'Actions open',
-      value: open.length,
-      onClick: () => setFilter('all'),
-    },
-    { label: 'Urgent', value: urgent, onClick: () => setFilter('urgent') },
-    { label: 'Openings', value: openings, onClick: () => setFilter('opening') },
-    {
-      label: 'Completed',
-      value: completed,
-      onClick: () => setFilter('completed'),
-    },
+  const stats = [
+    { label: 'calls', value: summary.calls },
+    { label: 'callers', value: summary.callers },
+    { label: 'handled', value: summary.handled },
+    { label: 'need you', value: summary.needYou, alert: true },
+    { label: 'Jade checks', value: summary.outOfHours.length, alert: true },
   ]
 
   return (
     <section
       aria-label="Weekend summary"
-      className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm sm:grid-cols-5"
+      className="rounded-2xl border border-slate-200 bg-white px-4 py-3.5 shadow-[0_14px_40px_rgba(20,33,61,.08)]"
     >
-      {metrics.map((metric) => (
-        <button
-          key={metric.label}
-          type="button"
-          onClick={metric.onClick}
-          className="border-b border-slate-100 px-5 py-4 text-left transition hover:bg-teal-50 sm:border-b-0 sm:border-r sm:last:border-r-0"
-        >
-          <span className="block text-2xl font-semibold text-slate-950">
-            {metric.value}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap">
+          <span className="col-span-2 mr-1 text-sm font-extrabold">
+            Monday summary
           </span>
-          <span className="text-sm text-slate-600">{metric.label}</span>
+          {stats.map((stat) => (
+            <span
+              key={stat.label}
+              className={`flex items-baseline gap-1.5 rounded-xl px-2.5 py-2 ${
+                stat.alert ? 'bg-amber-50 text-amber-800' : 'bg-slate-50'
+              }`}
+            >
+              <b className="text-lg">{stat.value}</b>
+              <span className="text-[11px] text-slate-500">{stat.label}</span>
+            </span>
+          ))}
+        </div>
+        <button
+          type="button"
+          aria-expanded={showBrief}
+          onClick={() => setShowBrief((value) => !value)}
+          className="rounded-xl bg-navy px-3 py-2.5 text-xs font-extrabold text-white hover:bg-navy-2"
+        >
+          {showBrief ? 'Hide brief' : 'View 15-sec brief'}
         </button>
-      ))}
+      </div>
+      {showBrief && (
+        <p className="mt-3 border-t border-slate-200 pt-3 text-xs text-slate-500">
+          <strong className="text-slate-900">Jade's brief:</strong>{' '}
+          {summary.brief}
+        </p>
+      )}
     </section>
   )
 }
