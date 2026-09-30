@@ -27,3 +27,20 @@ export function dayName(date: string) {
   )
   return days[((diff % 7) + 7) % 7]
 }
+
+export const isValidPhone = (number: string) => /^\+61\d{9}$/.test(number)
+
+/** "+61412887301" -> "•••• ••• 301" */
+export const maskPhone = (number: string) => `•••• ••• ${number.slice(-3)}`
+
+/** "+61412887301" -> "+61 412 887 301" */
+export const formatPhone = (number: string) =>
+  isValidPhone(number)
+    ? `${number.slice(0, 3)} ${number.slice(3, 6)} ${number.slice(6, 9)} ${number.slice(9)}`
+    : number
+
+/** Wall-clock parts of an ISO timestamp, ignoring the viewer's timezone. */
+export const wallClock = (iso: string) => ({
+  date: iso.slice(0, 10),
+  time: iso.slice(11, 16),
+})

@@ -28,10 +28,9 @@ export function getProgress(action: ActionItem): ActionProgress {
 export const isDone = (action: ActionItem) =>
   ['booked', 'resolved'].includes(getProgress(action))
 
+/** Latest planned callback: a booked slot, or the time proposed in a sent text. */
 export function getCallbackTime(action: ActionItem): string | undefined {
-  return [...action.activity]
-    .reverse()
-    .find((e) => e.type === 'callback-booked')?.time
+  return [...action.activity].reverse().find((entry) => entry.time)?.time
 }
 
 export function getOpenings(
