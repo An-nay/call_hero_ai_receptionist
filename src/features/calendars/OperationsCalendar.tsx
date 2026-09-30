@@ -49,7 +49,11 @@ function EventCard({
           aria-hidden
           className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-black/5 bg-white"
         >
-          {action ? categoryIcon[action.category] : '✨'}
+          {action
+            ? categoryIcon[action.category]
+            : event.tone === 'confirmed'
+              ? '✅'
+              : '✨'}
         </span>
         <div className="min-w-0">
           <h3 className="text-[13px] font-bold">
@@ -182,7 +186,9 @@ export function OperationsCalendar() {
                     <EventCard
                       event={event}
                       action={
-                        event.actionId ? byId.get(event.actionId) : undefined
+                        event.lane === 'front-desk' && event.actionId
+                          ? byId.get(event.actionId)
+                          : undefined
                       }
                       offer={
                         event.tone === 'opening' ? offerFor(event) : undefined
