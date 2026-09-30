@@ -26,7 +26,8 @@ function speak(text: string) {
 
 function DraftCard({ item }: { item: ActionItem }) {
   const { openings, selectAction, logActivity } = useDashboard()
-  const [text, setText] = useState(() => draftMessage(item, openings))
+  const [edited, setEdited] = useState<string | null>(null)
+  const text = edited ?? draftMessage(item, openings)
   const sent = item.activity.some((entry) => entry.type === 'messaged')
 
   return (
@@ -47,7 +48,7 @@ function DraftCard({ item }: { item: ActionItem }) {
       <textarea
         aria-label={`Message draft for ${shortName(item.callerName)}`}
         value={text}
-        onChange={(event) => setText(event.target.value)}
+        onChange={(event) => setEdited(event.target.value)}
         rows={4}
         className="mt-2 w-full resize-none rounded-lg bg-slate-100 p-2 text-[11px] leading-snug text-slate-700"
       />
