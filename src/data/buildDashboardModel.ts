@@ -1,4 +1,5 @@
 import type { CallRecord, WeekendCallsData } from '../types/calls'
+import { shortName } from './format'
 import { getCallbackTime, getOpenings, isDone } from './activity'
 import type { ActionItem, CalendarEvent } from '../types/dashboard'
 
@@ -129,6 +130,7 @@ export function buildCalendarEvents(
       title: booker ? shortName(booker.callerName) : 'Open appointment',
       subtitle: booker ? `Booked · ${slot.type}` : slot.type,
       tone: booker ? 'confirmed' : 'opening',
+      date: slot.date,
       actionId: booker?.id,
     }
   })
@@ -148,9 +150,4 @@ export function buildCalendarEvents(
   }))
 
   return [...openings, ...tasks]
-}
-
-function shortName(name: string) {
-  const [first, last] = name.split(' ')
-  return last ? `${first} ${last[0]}.` : first
 }

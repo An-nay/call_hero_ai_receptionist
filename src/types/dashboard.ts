@@ -51,6 +51,7 @@ export interface CalendarEvent {
   id: string
   lane: 'patient' | 'front-desk'
   time: string
+  date?: string
   title: string
   subtitle?: string
   tone: 'confirmed' | 'opening' | 'critical' | 'task' | 'completed'

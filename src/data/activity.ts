@@ -62,3 +62,13 @@ export function withoutLastActivity(action: ActionItem): ActionItem {
   const activity: ActivityEntry[] = action.activity.slice(0, -1)
   return { ...action, activity, status: 'open' }
 }
+
+const priorityRank = { critical: 0, high: 1, normal: 2 } as const
+
+export function sortByUrgency(actions: ActionItem[]) {
+  return [...actions].sort(
+    (a, b) =>
+      priorityRank[a.priority] - priorityRank[b.priority] ||
+      a.suggestedTime.localeCompare(b.suggestedTime),
+  )
+}
