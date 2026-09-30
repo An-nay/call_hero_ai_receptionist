@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo, useState } from 'react'
+import { type ReactNode, useMemo, useRef, useState } from 'react'
 import { getOpenings, isDone, withoutLastActivity } from '../data/activity'
 import { buildActions, buildCalendarEvents } from '../data/buildDashboardModel'
 import { weekendCalls } from '../data/calls'
@@ -9,6 +9,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [actions, setActions] = useState(() => buildActions(weekendCalls))
   const [filter, setFilter] = useState<ActionFilter>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const clinicMinute = useRef(480)
 
   const filteredActions = actions.filter((item) => {
     if (filter === 'all') return item.status === 'open'
@@ -18,7 +19,11 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
 
   const selectedAction = actions.find((item) => item.id === selectedId) ?? null
 
-  const logActivity = (id: string, entry: Omit<ActivityEntry, 'id' | 'at'>) => {
+  const logActivity = (
+    id: string,
+    entry: Omit<ActivityEntry, 'id' | 'at' | 'minute'>,
+  ) => {
+    const minute = clinicMinute.current
     setActions((current) =>
       current.map((item) => {
         if (item.id !== id) return item
@@ -28,6 +33,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
             ...entry,
             id: `${id}-${item.activity.length}`,
             at: new Date().toISOString(),
+            minute,
           },
         ]
         const next = { ...item, activity }
@@ -65,6 +71,9 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       completeAction,
       logActivity,
       undoLastActivity,
+      setClinicMinute: (minute: number) => {
+        clinicMinute.current = minute
+      },
     }),
     [actions, filter, filteredActions, selectedAction],
   )

@@ -51,7 +51,7 @@ export function DashboardShell({
           </div>
         </header>
         {summary}
-        <div className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.8fr)]">
+        <div className="mt-5 grid grid-cols-[minmax(0,1fr)] items-start gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.8fr)]">
           {calendar}
           {actions}
         </div>

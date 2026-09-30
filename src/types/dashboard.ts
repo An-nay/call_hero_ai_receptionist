@@ -15,6 +15,8 @@ export interface ActivityEntry {
   id: string
   type: ActivityType
   at: string
+  /** Clinic-clock minute (from midnight) when this happened. */
+  minute?: number
   /** Callback time (HH:MM) for 'callback-booked' or a 'messaged' proposal. */
   time?: string
   /** Opening id for 'appointment-booked'. */
@@ -44,6 +46,8 @@ export interface ActionItem {
   estimatedMinutes: number
   suggestedTime: string
   relatedOpening?: string
+  /** Calendar task type this action came from, for wording drafts. */
+  kind?: string
   activity: ActivityEntry[]
 }
 

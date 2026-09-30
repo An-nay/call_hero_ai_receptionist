@@ -19,7 +19,12 @@ export interface DashboardState {
   setFilter: (filter: ActionFilter) => void
   selectAction: (id: string | null) => void
   completeAction: (id: string) => void
-  logActivity: (id: string, entry: Omit<ActivityEntry, 'id' | 'at'>) => void
+  logActivity: (
+    id: string,
+    entry: Omit<ActivityEntry, 'id' | 'at' | 'minute'>,
+  ) => void
+  /** The calendar tells the state what time the clinic clock shows. */
+  setClinicMinute: (minute: number) => void
   undoLastActivity: (id: string) => void
 }
 

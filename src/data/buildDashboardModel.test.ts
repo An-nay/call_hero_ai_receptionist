@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
+import { getProgress, withoutLastActivity } from './activity'
 import { buildActions, buildCalendarEvents } from './buildDashboardModel'
 import { weekendCalls } from './calls'
 
 describe('dashboard model', () => {
-  it('groups the weekend into seven human actions', () => {
+  it('turns the calendar tasks due today into twelve actions', () => {
     const actions = buildActions(weekendCalls)
-    expect(actions).toHaveLength(7)
+    expect(actions).toHaveLength(12)
     expect(actions.filter((item) => item.priority === 'critical')).toHaveLength(
       2,
     )
@@ -18,17 +19,22 @@ describe('dashboard model', () => {
 
   it('groups repeat calls into one action', () => {
     const actions = buildActions(weekendCalls)
-    expect(
-      actions.find((item) => item.id === 'complaint-michael')?.callIds,
-    ).toEqual(['c005', 'c031'])
+    expect(actions.find((item) => item.id === 'michael')?.callIds).toEqual([
+      'c005',
+      'c031',
+    ])
+  })
+
+  it('gives every opening offer a slot to book', () => {
+    const grace = buildActions(weekendCalls).find((item) => item.id === 'grace')
+    expect(grace?.relatedOpening).toBeDefined()
   })
 })
 
 describe('activity', () => {
-  it('derives progress, calendar and undo from the activity log', async () => {
-    const { getProgress, withoutLastActivity } = await import('./activity')
+  it('derives progress, calendar and undo from the activity log', () => {
     const actions = buildActions(weekendCalls)
-    const grace = actions.find((a) => a.id === 'opening-grace')!
+    const grace = actions.find((a) => a.id === 'grace')!
     expect(getProgress(grace)).toBe('new')
 
     const booked = {
