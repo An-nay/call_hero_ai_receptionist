@@ -1,3 +1,4 @@
+import { useDashboard } from '../../state/useDashboard'
 import { EVERY_CALLER } from './callerTable'
 import { Icon } from '../../components/Icon'
 import { MoodFace } from './calendarParts'
@@ -5,6 +6,7 @@ import type { Mood } from './engine/model'
 import { MOOD } from './engine/tasks'
 
 export function EveryCaller() {
+  const { actions, selectAction } = useDashboard()
   return (
     <>
       <div className="legend">
@@ -38,8 +40,21 @@ export function EveryCaller() {
               </tr>,
               ...rows.map((r, i) => {
                 const [main, warn] = r[6].split(' ⚠')
+                const action = actions.find((a) => a.callerName === r[0])
                 return (
-                  <tr className={`row k-${k}`} key={`${title}-${i}`}>
+                  <tr
+                    className={`row k-${k}${action ? ' open' : ''}`}
+                    key={`${title}-${i}`}
+                    onClick={action ? () => selectAction(action.id) : undefined}
+                    onKeyDown={
+                      action
+                        ? (e) => e.key === 'Enter' && selectAction(action.id)
+                        : undefined
+                    }
+                    tabIndex={action ? 0 : undefined}
+                    role={action ? 'button' : undefined}
+                    aria-label={action ? `Open ${r[0]}` : undefined}
+                  >
                     <td className="nm">{r[0]}</td>
                     <td className="md">
                       <MoodFace mood={r[1]} /> {MOOD[r[1]].label}

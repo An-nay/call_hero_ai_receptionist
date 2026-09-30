@@ -166,8 +166,6 @@ export function OperationsCalendar() {
   )
   const doneToday = tasks.filter((t) => done[t.id]?.day === clock.day).length
   const pending = Object.values(planned.hours[clock.day] ?? {}).flat()
-  const left = pending.reduce((sum, x) => sum + x.t.min, 0)
-  const finish = pending.length ? Math.max(...pending.map((x) => x.end)) : null
   const urgentLeft = pending.filter((x) => x.t.pri <= 2).length
   const rolled = tasks.filter(
     (t) =>
@@ -179,8 +177,6 @@ export function OperationsCalendar() {
   const stats: [string | number, string][] = [
     [`${doneToday} / ${todayTasks.length}`, 'tasks done today'],
     [urgentLeft, 'urgent + high tasks left'],
-    [`${left} min`, 'work left today'],
-    [finish ? fmt(finish) : '—', 'projected finish'],
     [rolled, 'rolled to a later day'],
   ]
 
@@ -560,24 +556,6 @@ export function OperationsCalendar() {
                 {hours}
               </div>
             </div>
-          </div>
-
-          <div className="rules">
-            <b>How the day reshuffles.</b> Urgent and High tasks take the first
-            hour. Normal and Low tasks wait in the hours after it and are marked
-            "if she has time". Walk-ins can arrive at any hour, so each hour
-            keeps about 30 minutes free. Once every Urgent and High task is
-            done, she is ahead: the buffer lifts and Normal and Low tasks move
-            up, one by one, as far as they fit. Let an hour pass and whatever is
-            left moves to the next hour with room, still in priority order.
-            Anything that won't fit before close rolls to the next open day.
-            Tasks skip front-desk blocks (lunch 14:00 to 14:45, the first
-            patient arriving, check-in around each booking). Bookings are fixed.{' '}
-            <b>Final pass.</b> Before opening, a second layer re-reads the call
-            log, corrects Jade's mistakes and writes the suggestions on the task
-            cards. Anything you do in an action (a text, a call, a booking)
-            updates this calendar. Task times are working estimates, not
-            benchmarked averages.
           </div>
         </div>
       )}

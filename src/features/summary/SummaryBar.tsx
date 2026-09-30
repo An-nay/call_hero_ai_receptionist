@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Icon } from '../../components/Icon'
 import { buildSummary } from '../../data/buildSummary'
 import { useDashboard } from '../../state/useDashboard'
@@ -13,7 +12,6 @@ function speak(text: string) {
 
 export function SummaryBar() {
   const { data, actions } = useDashboard()
-  const [showBrief, setShowBrief] = useState(false)
   const summary = buildSummary(data, actions)
 
   const stats = [
@@ -57,22 +55,8 @@ export function SummaryBar() {
             <Icon name="play" size={11} />
             Play brief
           </button>
-          <button
-            type="button"
-            aria-expanded={showBrief}
-            onClick={() => setShowBrief((value) => !value)}
-            className="rounded-xl bg-brand px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-navy-2"
-          >
-            {showBrief ? 'Hide brief' : 'View 15-sec brief'}
-          </button>
         </div>
       </div>
-      {showBrief && (
-        <p className="mt-3 border-t border-slate-200 pt-3 text-xs text-slate-500">
-          <strong className="text-slate-900">Jade's brief:</strong>{' '}
-          {summary.brief}
-        </p>
-      )}
     </section>
   )
 }

@@ -913,3 +913,10 @@
 .cal-root .box {
   border-radius: 6px;
 }
+
+.cal-root tr.row.open {
+  cursor: pointer;
+}
+.cal-root tr.row.open:hover td {
+  background: var(--bb);
+}

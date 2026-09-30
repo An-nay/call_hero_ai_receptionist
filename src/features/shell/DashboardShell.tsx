@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { isDone } from '../../data/activity'
 import { useDashboard } from '../../state/useDashboard'
 
 interface DashboardShellProps {
@@ -7,17 +6,8 @@ interface DashboardShellProps {
   calendar: ReactNode
 }
 
-function Pill({ children }: { children: ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-navy">
-      {children}
-    </span>
-  )
-}
-
 export function DashboardShell({ summary, calendar }: DashboardShellProps) {
-  const { data, actions: all } = useDashboard()
-  const cleared = all.filter(isDone).length
+  const { data } = useDashboard()
 
   return (
     <main className="min-h-screen p-3 sm:p-6">
@@ -35,16 +25,6 @@ export function DashboardShell({ summary, calendar }: DashboardShellProps) {
                 {data.clinic.name} · Monday · 8:00 AM
               </p>
             </div>
-          </div>
-          <div className="hidden items-center gap-2 sm:flex">
-            <Pill>
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              Jade online
-            </Pill>
-            <Pill>
-              {cleared} / {all.length} cleared
-            </Pill>
-            <Pill>First patient 8:30</Pill>
           </div>
         </header>
         {summary}
