@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { isDone } from '../../data/activity'
 import { useDashboard } from '../../state/useDashboard'
 import './calendar.css'
@@ -14,28 +14,10 @@ import { EveryCaller } from './EveryCaller'
 import { buildCalendarModel } from './engine/model'
 import { highClear, plan, type DoneMap } from './engine/plan'
 import { buildTasks, MOOD, PRI, type Task } from './engine/tasks'
-import {
-  CLOSE,
-  DAYS,
-  OPEN,
-  dlabel,
-  dnum,
-  fmt,
-  hm,
-  isOpen,
-  liveMinutes,
-  wd,
-} from './engine/time'
+import { DAYS, OPEN, dnum, hm, isOpen, wd } from './engine/time'
 
-interface ClockState {
-  mode: 'live' | 'demo'
-  day: number
-  min: number
-  speed: number
-}
-
-/** The Monday-8:00 scene is the default; "Back to live" follows the real clinic clock. */
-const START: ClockState = { mode: 'demo', day: 0, min: OPEN, speed: 0 }
+/** The screen is the Monday 8:00 scene from the brief. */
+const clock = { day: 0, min: OPEN }
 
 export function OperationsCalendar() {
   const {
@@ -45,15 +27,11 @@ export function OperationsCalendar() {
     selectAction,
     logActivity,
     undoLastActivity,
-    setClinicMinute,
   } = useDashboard()
   const [tab, setTab] = useState<'cal' | 'tbl'>('cal')
-  const [clock, setClock] = useState<ClockState>(START)
-  const [showClock, setShowClock] = useState(false)
   const [sel, setSel] = useState(0)
   const [localDone, setLocalDone] = useState<DoneMap>({})
   const [tags, setTags] = useState<Record<string, 'up' | 'dn'>>({})
-  const preciseMin = useRef(clock.min)
 
   const actionById = useMemo(
     () => new Map(actions.map((item) => [item.id, item])),
@@ -72,38 +50,6 @@ export function OperationsCalendar() {
   const model = useMemo(() => buildCalendarModel(data, filled), [data, filled])
   const { tasks, log } = useMemo(() => buildTasks(model, OPEN), [model])
 
-  // The clock: live follows the clinic's real time, demo can be played or jumped.
-  useEffect(() => {
-    const id = setInterval(() => {
-      setClinicMinute(Math.floor(preciseMin.current))
-      setClock((c) => {
-        if (c.mode === 'live') {
-          const min = Math.floor(liveMinutes())
-          return min === Math.floor(c.min) ? c : { ...c, min }
-        }
-        if (c.speed && preciseMin.current < CLOSE) {
-          preciseMin.current = Math.min(
-            CLOSE,
-            preciseMin.current + c.speed * 0.25,
-          )
-          const min = Math.floor(preciseMin.current)
-          const speed = preciseMin.current >= CLOSE ? 0 : c.speed
-          return min === c.min && speed === c.speed ? c : { ...c, min, speed }
-        }
-        return c
-      })
-    }, 250)
-    return () => clearInterval(id)
-  }, [setClinicMinute])
-
-  const setClockTo = (next: Partial<ClockState>) =>
-    setClock((c) => {
-      const merged = { ...c, ...next }
-      preciseMin.current = merged.min
-      setClinicMinute(Math.floor(merged.min))
-      return merged
-    })
-
   // A task is done when its action is (booked, resolved), or ticked here if it has no action.
   const done: DoneMap = useMemo(() => {
     const map: DoneMap = { ...localDone }
@@ -116,8 +62,8 @@ export function OperationsCalendar() {
   }, [localDone, actions])
 
   const planned = useMemo(
-    () => plan(model, tasks, done, { day: clock.day, min: clock.min }),
-    [model, tasks, done, clock.day, clock.min],
+    () => plan(model, tasks, done, clock),
+    [model, tasks, done],
   )
 
   // "Pulled forward / pushed back" flashes when a task changes hour.
@@ -372,104 +318,6 @@ export function OperationsCalendar() {
         <EveryCaller />
       ) : (
         <div className="main">
-          <div className="toprow">
-            <button
-              type="button"
-              className="btn"
-              aria-expanded={showClock}
-              onClick={() => setShowClock((v) => !v)}
-            >
-              Demo controls
-            </button>
-          </div>
-          {showClock && (
-            <div className="clock">
-              <span className="t">
-                {dlabel(clock.day)} {fmt(now)}
-              </span>
-              <span className="lbl">
-                {clock.mode === 'live'
-                  ? 'Live clinic clock'
-                  : 'Demo clock (simulated)'}
-              </span>
-              <span className="sp"></span>
-              <button
-                type="button"
-                className="btn"
-                aria-pressed={clock.speed > 0}
-                onClick={() =>
-                  setClockTo({ mode: 'demo', speed: clock.speed ? 0 : 5 })
-                }
-              >
-                {clock.speed ? 'Pause' : 'Play'}
-              </button>
-              {[1, 5, 15].map((s) => (
-                <button
-                  type="button"
-                  key={s}
-                  className={`btn${clock.speed === s ? ' on' : ''}`}
-                  onClick={() => setClockTo({ mode: 'demo', speed: s })}
-                >
-                  {s} min/s
-                </button>
-              ))}
-              {[15, 60].map((m) => (
-                <button
-                  type="button"
-                  key={m}
-                  className="btn"
-                  onClick={() =>
-                    setClockTo({
-                      mode: 'demo',
-                      min: Math.min(CLOSE, clock.min + m),
-                    })
-                  }
-                >
-                  +{m === 60 ? '1 hour' : `${m} min`}
-                </button>
-              ))}
-              <button
-                type="button"
-                className="btn"
-                onClick={() => {
-                  let next = clock.day + 1
-                  while (!isOpen(next)) next++
-                  if (next >= DAYS) return
-                  setSel(next)
-                  setClockTo({ mode: 'demo', day: next, min: OPEN, speed: 0 })
-                }}
-              >
-                Next day
-              </button>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => {
-                  setSel(0)
-                  setClockTo({
-                    mode: 'live',
-                    day: 0,
-                    min: Math.floor(liveMinutes()),
-                    speed: 0,
-                  })
-                }}
-              >
-                Back to live
-              </button>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => {
-                  setSel(0)
-                  setLocalDone({})
-                  setClockTo(START)
-                }}
-              >
-                Monday 8:00
-              </button>
-            </div>
-          )}
-
           <details className="pass">
             <summary>
               Final pass, ran before opening: {nFix} correction
