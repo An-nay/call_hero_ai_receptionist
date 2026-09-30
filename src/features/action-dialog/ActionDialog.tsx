@@ -27,16 +27,18 @@ function DialogBody({ action }: { action: ActionItem }) {
 
   return (
     <div>
-      <div className="border-b border-slate-100 p-5">
+      <div className="border-b border-line/60 p-5">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-[11px] font-extrabold uppercase tracking-wide text-brand">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-brand">
             {action.category.replace('-', ' ')} · {action.estimatedMinutes} min
           </p>
           <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-extrabold">
             {progressLabels[progress]}
           </span>
         </div>
-        <h2 className="mt-1.5 text-xl font-bold">{action.title}</h2>
+        <h2 className="mt-1.5 font-display text-2xl font-semibold tracking-tight text-navy">
+          {action.title}
+        </h2>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
           <span>{action.callerName}</span>
           <span aria-hidden>·</span>
@@ -45,7 +47,7 @@ function DialogBody({ action }: { action: ActionItem }) {
       </div>
 
       <div className="space-y-4 p-5">
-        <div className="rounded-xl bg-blue-50 p-3.5">
+        <div className="rounded-xl bg-brand-soft p-3.5">
           <p className="text-[10px] font-extrabold uppercase tracking-wide text-brand">
             Recommended next step
           </p>
@@ -93,7 +95,7 @@ function DialogBody({ action }: { action: ActionItem }) {
         <ActivityLog action={action} />
       </div>
 
-      <div className="flex justify-end gap-3 border-t border-slate-100 p-4">
+      <div className="flex justify-end gap-3 border-t border-line/60 p-4">
         <button
           type="button"
           onClick={() => selectAction(null)}
@@ -104,7 +106,7 @@ function DialogBody({ action }: { action: ActionItem }) {
         <button
           type="button"
           onClick={() => completeAction(action.id)}
-          className="rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-navy-2"
+          className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-navy-2"
         >
           Mark resolved
         </button>
@@ -128,7 +130,7 @@ export function ActionDialog() {
     <dialog
       ref={dialogRef}
       onClose={() => selectAction(null)}
-      className="m-auto max-h-[92vh] w-[min(94vw,880px)] overflow-y-auto rounded-2xl bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-950/40 max-sm:mb-0 max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none"
+      className="m-auto max-h-[92vh] w-[min(94vw,880px)] overflow-y-auto rounded-3xl bg-white p-0 text-slate-900 shadow-[0_24px_60px_rgba(11,60,79,.28)] backdrop:bg-slate-950/40 max-sm:mb-0 max-sm:w-full max-sm:max-w-none max-sm:rounded-b-none"
     >
       {selectedAction && (
         <DialogBody key={selectedAction.id} action={selectedAction} />

@@ -2,7 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { isDone } from '../../data/activity'
 import { useDashboard } from '../../state/useDashboard'
 import './calendar.css'
-import { ApptCard, BlockCard, RichText, TaskCard } from './calendarParts'
+import {
+  ApptCard,
+  BlockCard,
+  MoodFace,
+  RichText,
+  TaskCard,
+} from './calendarParts'
+import type { Mood } from './engine/model'
 import { EveryCaller } from './EveryCaller'
 import { buildCalendarModel } from './engine/model'
 import { highClear, plan, type DoneMap } from './engine/plan'
@@ -520,11 +527,13 @@ export function OperationsCalendar() {
               </span>
             ))}
             <span className="lg k-g">Booking (fixed)</span>
-            {Object.values(MOOD).map((m) => (
-              <span className="mlg" key={m.label}>
-                {m.e} <b>{m.label}</b>: {m.tip}
-              </span>
-            ))}
+            {(Object.entries(MOOD) as [Mood, (typeof MOOD)[Mood]][]).map(
+              ([mood, m]) => (
+                <span className="mlg" key={m.label}>
+                  <MoodFace mood={mood} /> <b>{m.label}</b>: {m.tip}
+                </span>
+              ),
+            )}
           </div>
 
           <div className="days" role="tablist" aria-label="Days">

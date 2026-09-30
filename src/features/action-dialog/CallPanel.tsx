@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Icon } from '../../components/Icon'
 import { firstName, formatPhone } from '../../data/format'
 import { useDashboard } from '../../state/useDashboard'
 import type { ActionItem } from '../../types/dashboard'
@@ -17,8 +18,10 @@ export function CallPanel({
   const last = [...action.activity].reverse().find((e) => e.type === 'called')
 
   return (
-    <section className="rounded-xl border border-slate-200 p-3.5">
-      <h3 className="text-xs font-bold">📞 Call</h3>
+    <section className="rounded-2xl border border-line bg-white p-4 shadow-[0_1px_2px_rgba(22,78,99,.04)]">
+      <h3 className="flex items-center gap-1.5 text-xs font-bold text-navy">
+        <Icon name="phone" size={14} /> Call
+      </h3>
       <p className="mt-0.5 text-[11px] text-slate-500">{formatPhone(phone)}</p>
       <a
         href={canContact ? `tel:${phone}` : undefined}
@@ -40,7 +43,7 @@ export function CallPanel({
                   logActivity(action.id, { type: 'called', detail })
                   setDialled(false)
                 }}
-                className="flex-1 rounded-lg border border-slate-200 px-2 py-1.5 text-[11px] font-bold hover:bg-slate-50"
+                className="flex-1 rounded-lg border border-line px-2 py-1.5 text-[11px] font-bold hover:bg-slate-50"
               >
                 {detail}
               </button>

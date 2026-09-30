@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Icon } from '../../components/Icon'
 import { buildSummary } from '../../data/buildSummary'
 import { useDashboard } from '../../state/useDashboard'
 
@@ -26,21 +27,23 @@ export function SummaryBar() {
   return (
     <section
       aria-label="Weekend summary"
-      className="rounded-2xl border border-slate-200 bg-white px-4 py-3.5 shadow-[0_14px_40px_rgba(20,33,61,.08)]"
+      className="rounded-2xl border border-line bg-white px-5 py-4 shadow-[0_1px_2px_rgba(22,78,99,.05)]"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap">
-          <span className="col-span-2 mr-1 text-sm font-extrabold">
+          <span className="col-span-2 mr-2 font-display text-base font-semibold text-navy">
             Monday summary
           </span>
           {stats.map((stat) => (
             <span
               key={stat.label}
               className={`flex items-baseline gap-1.5 rounded-xl px-2.5 py-2 ${
-                stat.alert ? 'bg-amber-50 text-amber-800' : 'bg-slate-50'
+                stat.alert
+                  ? 'bg-amber-50 text-amber-800'
+                  : 'bg-brand-soft/60 text-navy'
               }`}
             >
-              <b className="text-lg">{stat.value}</b>
+              <b className="font-display text-xl font-semibold">{stat.value}</b>
               <span className="text-[11px] text-slate-500">{stat.label}</span>
             </span>
           ))}
@@ -49,15 +52,16 @@ export function SummaryBar() {
           <button
             type="button"
             onClick={() => speak(summary.brief)}
-            className="rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-extrabold hover:bg-slate-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-white px-3 py-2.5 text-xs font-semibold text-navy hover:bg-brand-soft"
           >
-            ▶ Play brief
+            <Icon name="play" size={11} />
+            Play brief
           </button>
           <button
             type="button"
             aria-expanded={showBrief}
             onClick={() => setShowBrief((value) => !value)}
-            className="rounded-xl bg-navy px-3 py-2.5 text-xs font-extrabold text-white hover:bg-navy-2"
+            className="rounded-xl bg-brand px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-navy-2"
           >
             {showBrief ? 'Hide brief' : 'View 15-sec brief'}
           </button>

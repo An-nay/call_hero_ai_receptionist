@@ -1,16 +1,20 @@
 import { EVERY_CALLER } from './callerTable'
+import { Icon } from '../../components/Icon'
 import { MoodFace } from './calendarParts'
+import type { Mood } from './engine/model'
 import { MOOD } from './engine/tasks'
 
 export function EveryCaller() {
   return (
     <>
       <div className="legend">
-        {Object.values(MOOD).map((m) => (
-          <span className="mlg" key={m.label}>
-            {m.e} <b>{m.label}</b>: {m.tip}
-          </span>
-        ))}
+        {(Object.entries(MOOD) as [Mood, (typeof MOOD)[Mood]][]).map(
+          ([mood, m]) => (
+            <span className="mlg" key={m.label}>
+              <MoodFace mood={mood} /> <b>{m.label}</b>: {m.tip}
+            </span>
+          ),
+        )}
       </div>
       <div className="wrap">
         <table>
@@ -51,7 +55,10 @@ export function EveryCaller() {
                     <td>
                       {main}
                       {warn !== undefined && (
-                        <span className="warn">⚠{warn}</span>
+                        <span className="warn">
+                          <Icon name="alert" size={12} />
+                          {warn}
+                        </span>
                       )}
                     </td>
                   </tr>

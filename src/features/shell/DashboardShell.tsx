@@ -9,7 +9,7 @@ interface DashboardShellProps {
 
 function Pill({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-2 text-xs font-semibold text-navy">
       {children}
     </span>
   )
@@ -24,11 +24,13 @@ export function DashboardShell({ summary, calendar }: DashboardShellProps) {
       <div className="mx-auto max-w-[1460px]">
         <header className="mb-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-navy font-extrabold text-white">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-brand font-display text-lg font-semibold text-white shadow-sm">
               CH
             </div>
             <div>
-              <h1 className="text-lg font-bold leading-tight">Call Hero</h1>
+              <h1 className="font-display text-xl font-semibold leading-tight tracking-tight text-navy">
+                Call Hero
+              </h1>
               <p className="text-xs text-slate-500">
                 {data.clinic.name} · Monday · 8:00 AM
               </p>

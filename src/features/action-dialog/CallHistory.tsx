@@ -1,8 +1,13 @@
 import { useState } from 'react'
+import { Icon } from '../../components/Icon'
 import { dayName, wallClock } from '../../data/format'
 import type { CallRecord } from '../../types/calls'
 
-const mood = { positive: '🙂', neutral: '😐', negative: '😟' } as const
+const mood = {
+  positive: { icon: 'smile', tone: 'text-emerald-600' },
+  neutral: { icon: 'meh', tone: 'text-slate-500' },
+  negative: { icon: 'frown', tone: 'text-rose-600' },
+} as const
 
 function CallRow({ call }: { call: CallRecord }) {
   const [playing, setPlaying] = useState(false)
@@ -11,13 +16,16 @@ function CallRow({ call }: { call: CallRecord }) {
   const seconds = String(call.duration_seconds % 60).padStart(2, '0')
 
   return (
-    <li className="rounded-xl border border-slate-200 p-3">
+    <li className="rounded-xl border border-line p-3">
       <div className="flex items-center justify-between gap-2 text-[11px] font-bold text-slate-500">
         <span>
           {dayName(date)} {time} · {minutes}:{seconds}
         </span>
-        <span aria-label={`Sentiment ${call.sentiment}`}>
-          {mood[call.sentiment]}
+        <span
+          className={mood[call.sentiment].tone}
+          aria-label={`Sentiment ${call.sentiment}`}
+        >
+          <Icon name={mood[call.sentiment].icon} size={16} />
         </span>
       </div>
       <p className="mt-1.5 text-[13px] leading-snug text-slate-700">
@@ -33,9 +41,12 @@ function CallRow({ call }: { call: CallRecord }) {
           <button
             type="button"
             onClick={() => setPlaying((value) => !value)}
-            className="rounded-md border border-slate-200 px-2 py-1 text-[10px] font-extrabold hover:bg-slate-50"
+            className="rounded-md border border-line px-2 py-1 text-[10px] font-extrabold hover:bg-slate-50"
           >
-            {playing ? '⏸ Playing…' : '▶ Recording'}
+            <span className="inline-flex items-center gap-1">
+              <Icon name="play" size={10} />
+              {playing ? 'Playing…' : 'Recording'}
+            </span>
           </button>
         ) : (
           <span className="text-[10px] text-slate-400">No recording</span>

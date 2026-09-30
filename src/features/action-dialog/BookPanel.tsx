@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Icon } from '../../components/Icon'
 import { getCallbackTime } from '../../data/activity'
 import { dayName } from '../../data/format'
 import { useDashboard } from '../../state/useDashboard'
@@ -21,11 +22,14 @@ export function BookPanel({ action }: { action: ActionItem }) {
       : (free[0]?.id ?? '')
 
   return (
-    <section className="rounded-xl border border-slate-200 p-3.5">
-      <h3 className="text-xs font-bold">📅 Book</h3>
+    <section className="rounded-2xl border border-line bg-white p-4 shadow-[0_1px_2px_rgba(22,78,99,.04)]">
+      <h3 className="flex items-center gap-1.5 text-xs font-bold text-navy">
+        <Icon name="calendar" size={14} /> Book
+      </h3>
       {mine ? (
         <p className="mt-2 rounded-lg bg-emerald-50 p-2.5 text-[12px] font-bold text-emerald-800">
-          ✓ Booked {dayName(mine.date)} {mine.time}
+          <Icon name="check" size={14} className="mr-1 inline" />
+          Booked {dayName(mine.date)} {mine.time}
         </p>
       ) : free.length > 0 ? (
         <>
@@ -34,7 +38,7 @@ export function BookPanel({ action }: { action: ActionItem }) {
             <select
               value={selected}
               onChange={(event) => setSlotId(event.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[12px] text-slate-900"
+              className="mt-1 w-full rounded-lg border border-line bg-white px-2 py-1.5 text-[12px] text-slate-900"
             >
               {free.map((slot) => (
                 <option key={slot.id} value={slot.id}>
@@ -52,7 +56,7 @@ export function BookPanel({ action }: { action: ActionItem }) {
                 slotId: selected,
               })
             }
-            className="mt-2 w-full rounded-lg bg-navy px-3 py-2 text-xs font-extrabold text-white hover:bg-navy-2"
+            className="mt-2 w-full rounded-lg bg-brand px-3 py-2 text-xs font-extrabold text-white hover:bg-navy-2"
           >
             Book appointment
           </button>
@@ -62,14 +66,14 @@ export function BookPanel({ action }: { action: ActionItem }) {
           No open appointments left.
         </p>
       )}
-      <div className="mt-3 border-t border-slate-100 pt-3">
+      <div className="mt-3 border-t border-line/60 pt-3">
         <label className="block text-[11px] text-slate-500">
           Callback slot in my plan
           <input
             type="time"
             value={callback}
             onChange={(event) => setCallback(event.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-[12px] text-slate-900"
+            className="mt-1 w-full rounded-lg border border-line px-2 py-1.5 text-[12px] text-slate-900"
           />
         </label>
         <button
@@ -78,7 +82,7 @@ export function BookPanel({ action }: { action: ActionItem }) {
             callback &&
             logActivity(action.id, { type: 'callback-booked', time: callback })
           }
-          className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-xs font-extrabold hover:bg-slate-50"
+          className="mt-2 w-full rounded-lg border border-line px-3 py-2 text-xs font-extrabold hover:bg-slate-50"
         >
           Add to my plan
         </button>

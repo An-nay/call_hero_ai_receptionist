@@ -1,13 +1,25 @@
 import type { ReactNode } from 'react'
 import type { Appt, Block, Mood } from './engine/model'
 import { CATS, MOOD, PRI, type Task } from './engine/tasks'
+import { Icon } from '../../components/Icon'
 import { dlabel, fmt } from './engine/time'
+
+const moodStyle = {
+  nicer: { icon: 'frown', tone: 'text-rose-600' },
+  normal: { icon: 'meh', tone: 'text-slate-500' },
+  casual: { icon: 'smile', tone: 'text-emerald-600' },
+} as const
 
 export function MoodFace({ mood }: { mood: Mood }) {
   const m = MOOD[mood]
+  const style = moodStyle[mood]
   return (
-    <span className="mood" title={`${m.label}: ${m.tip}`} aria-label={m.label}>
-      {m.e}
+    <span
+      className={`mood ${style.tone}`}
+      title={`${m.label}: ${m.tip}`}
+      aria-label={m.label}
+    >
+      <Icon name={style.icon} size={15} />
     </span>
   )
 }
@@ -36,7 +48,8 @@ function Tel({ who, phones }: { who: string; phones: Record<string, string> }) {
       title={`Call ${who}`}
       onClick={(event) => event.stopPropagation()}
     >
-      📞 {local.slice(0, 4)} {local.slice(4, 7)} {local.slice(7)}
+      <Icon name="phone" size={12} />
+      {local.slice(0, 4)} {local.slice(4, 7)} {local.slice(7)}
     </a>
   )
 }
@@ -151,7 +164,11 @@ export function ApptCard({
             </span>
           )}{' '}
           <Tel who={appt.who} phones={phones} />
-          {appt.warn && <span className="warn">⚠ {appt.warn}</span>}
+          {appt.warn && (
+            <span className="warn">
+              <Icon name="alert" size={12} /> {appt.warn}
+            </span>
+          )}
         </span>
         <span className="ln3">
           <span className="time">{appt.time}</span> · {appt.type} · {appt.prac}

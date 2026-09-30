@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Icon } from '../../components/Icon'
 import { getCallbackTime } from '../../data/activity'
 import { draftMessage } from '../../data/drafts'
 import { firstName } from '../../data/format'
@@ -31,8 +32,10 @@ export function MessagePanel({
   }
 
   return (
-    <section className="rounded-xl border border-slate-200 p-3.5">
-      <h3 className="text-xs font-bold">💬 Message</h3>
+    <section className="rounded-2xl border border-line bg-white p-4 shadow-[0_1px_2px_rgba(22,78,99,.04)]">
+      <h3 className="flex items-center gap-1.5 text-xs font-bold text-navy">
+        <Icon name="message" size={14} /> Message
+      </h3>
       <p className="mt-0.5 text-[11px] text-slate-500">
         Drafted for {firstName(action.callerName)}. Edit before sending.
       </p>
@@ -64,7 +67,7 @@ export function MessagePanel({
           aria-label="Custom callback time"
           value={time}
           onChange={(event) => pickTime(event.target.value)}
-          className="rounded-lg border border-slate-200 px-2 py-1 text-[11px]"
+          className="rounded-lg border border-line px-2 py-1 text-[11px]"
         />
       </div>
       <button
@@ -73,7 +76,13 @@ export function MessagePanel({
         onClick={send}
         className={`mt-3 w-full rounded-lg px-3 py-2.5 text-xs font-extrabold text-white disabled:opacity-60 ${sent ? 'bg-emerald-600' : 'bg-brand hover:bg-blue-700'}`}
       >
-        {sent ? '✓ Sent' : 'Send text'}
+        {sent ? (
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <Icon name="check" size={14} /> Sent
+          </span>
+        ) : (
+          'Send text'
+        )}
       </button>
     </section>
   )

@@ -46,10 +46,10 @@ export const PRI: Record<Priority, { name: string; k: string }> = {
   4: { name: 'Low', k: 'n' },
 }
 
-export const MOOD: Record<Mood, { e: string; label: string; tip: string }> = {
-  nicer: { e: '😟', label: 'Nicer', tip: 'Slow down, apologise, show empathy' },
-  normal: { e: '🙂', label: 'Normal', tip: 'Polite and professional' },
-  casual: { e: '😄', label: 'Casual', tip: 'Friendly and relaxed' },
+export const MOOD: Record<Mood, { label: string; tip: string }> = {
+  nicer: { label: 'Nicer', tip: 'Slow down, apologise, show empathy' },
+  normal: { label: 'Normal', tip: 'Polite and professional' },
+  casual: { label: 'Casual', tip: 'Friendly and relaxed' },
 }
 
 export interface Task {
