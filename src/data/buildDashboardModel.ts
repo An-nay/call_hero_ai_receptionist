@@ -89,6 +89,32 @@ export function buildActions(data: WeekendCallsData): ActionItem[] {
       suggestedTime: '09:30',
     }),
     action({
+      id: 'fix-laura',
+      primaryCallId: 'c010',
+      callIds: ['c010'],
+      title: 'Booked on a closed day',
+      description:
+        'Jade booked a Saturday appointment, but the clinic is closed on weekends.',
+      recommendedAction: 'Move to a weekday',
+      priority: 'high',
+      category: 'follow-up',
+      estimatedMinutes: 3,
+      suggestedTime: '09:45',
+    }),
+    action({
+      id: 'confirm-kevin',
+      primaryCallId: 'c029',
+      callIds: ['c029'],
+      title: 'Priority flag looks wrong',
+      description:
+        'Jade flagged this booking as priority, but the caller only chipped a tooth and is not in pain.',
+      recommendedAction: 'Confirm the booking',
+      priority: 'normal',
+      category: 'follow-up',
+      estimatedMinutes: 3,
+      suggestedTime: '10:45',
+    }),
+    action({
       id: 'recover-david',
       primaryCallId: 'c007',
       callIds: ['c007'],

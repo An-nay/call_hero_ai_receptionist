@@ -48,6 +48,12 @@ export function DashboardShell({
               {cleared} / {all.length} cleared
             </Pill>
             <Pill>First patient 8:30</Pill>
+            <a
+              href="./src/features/calendars/prototype/dashboard.html"
+              className="inline-flex items-center rounded-full bg-navy px-3 py-2 text-xs font-bold text-white hover:bg-navy-2"
+            >
+              Full calendar ↗
+            </a>
           </div>
         </header>
         {summary}

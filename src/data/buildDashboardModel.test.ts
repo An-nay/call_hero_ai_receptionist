@@ -3,9 +3,9 @@ import { buildActions, buildCalendarEvents } from './buildDashboardModel'
 import { weekendCalls } from './calls'
 
 describe('dashboard model', () => {
-  it('groups the weekend into seven human actions', () => {
+  it('groups the weekend into nine human actions', () => {
     const actions = buildActions(weekendCalls)
-    expect(actions).toHaveLength(7)
+    expect(actions).toHaveLength(9)
     expect(actions.filter((item) => item.priority === 'critical')).toHaveLength(
       2,
     )

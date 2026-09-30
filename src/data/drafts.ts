@@ -19,6 +19,11 @@ export function draftMessage(
         action.relatedOpening?.startsWith(`${item.date}T${item.time}`),
     ) ?? openings.find((item) => !item.bookedByActionId)
 
+  if (action.id === 'fix-laura')
+    return `Hi ${name}, it's Harbourside Dental. Your booking falls on a Saturday, when we're closed. Could we move it to a weekday? Are you free for a call at ${time}?`
+  if (action.id === 'confirm-kevin')
+    return `Hi ${name}, it's Harbourside Dental. We're confirming your appointment on Tuesday at 08:00. Reply YES to confirm, or let us know if you need a different time.`
+
   switch (action.category) {
     case 'opening':
       return slot
