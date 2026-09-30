@@ -1,0 +1,17 @@
+{
+  "business_name": "Calm Minds Psychology",
+  "vertical": "psychology",
+  "tone": "gentle, unhurried, respectful",
+  "open_hours": "Mon-Thu 9:00-18:00",
+  "services": [
+    {"name": "Initial consultation", "duration_min": 50, "price_aud": null, "quote_price_on_phone": false},
+    {"name": "Follow-up session", "duration_min": 50, "price_aud": null, "quote_price_on_phone": false}
+  ],
+  "languages": ["English"],
+  "escalation_triggers": ["suicidal thoughts", "self-harm", "immediate danger", "crisis"],
+  "escalation_message": "I'm really glad you called. I'm getting a clinician to speak with you now. If you're in immediate danger, please call 000, or Lifeline on 13 11 14.",
+  "followups": [
+    {"delay_minutes": 60, "channel": "sms", "message": "Hi {name}, no pressure. Whenever you're ready, you can book here: {link}"}
+  ],
+  "never_do": ["give therapeutic advice", "discuss fees beyond what staff confirm", "diagnose"]
+}

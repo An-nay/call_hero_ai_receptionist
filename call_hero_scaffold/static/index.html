@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Front Desk Studio</title>
+<style>
+  /* PLACEHOLDER UI: the front-end person owns and replaces this. It exists so the API can be tried end to end. */
+  :root { --bg:#f6f7f9; --ink:#1b2430; --line:#d9dee5; --accent:#1f5fbf; --ok:#1e7a4d; --warn:#b3261e; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#12161c; --ink:#e6eaf0; --line:#2b3440; --accent:#6ea2ff; --ok:#5fc48f; --warn:#ff8a80; } }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 system-ui, sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:16px 24px; border-bottom:1px solid var(--line); font-weight:600; }
+  main { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; padding:16px 24px; }
+  section { border:1px solid var(--line); padding:16px; min-height:200px; }
+  h2 { margin:0 0 12px; font-size:16px; }
+  textarea, input, select { width:100%; padding:8px; font:inherit; color:inherit; background:transparent; border:1px solid var(--line); margin-bottom:8px; }
+  button { padding:8px 14px; font:inherit; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; margin:0 6px 6px 0; }
+  button.ghost { background:transparent; color:var(--accent); }
+  button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  #log { height:240px; overflow:auto; border:1px solid var(--line); padding:8px; margin-bottom:8px; }
+  .me { text-align:right; } .bot { color:var(--accent); }
+  pre { white-space:pre-wrap; font-size:13px; margin:0; }
+  .num { font-size:28px; font-weight:700; }
+  .status { font-size:13px; } .needs_human { color:var(--warn); } .booked,.recovered { color:var(--ok); }
+</style>
+</head>
+<body>
+<header>Front Desk Studio</header>
+<main>
+  <section aria-labelledby="h-build">
+    <h2 id="h-build">1. Build your front desk</h2>
+    <label for="tpl">Start from a template</label>
+    <select id="tpl"></select>
+    <label for="desc">Describe your business</label>
+    <textarea id="desc" rows="3" placeholder="Two-chair dental clinic in Ultimo. Many Mandarin-speaking patients. Closed weekends."></textarea>
+    <button id="gen">Generate setup</button><button id="save" class="ghost">Save and use</button>
+    <pre id="cfg" aria-live="polite"></pre>
+  </section>
+
+  <section aria-labelledby="h-call">
+    <h2 id="h-call">2. Simulated call</h2>
+    <div id="log" aria-live="polite"></div>
+    <input id="msg" placeholder="Type what the caller says" aria-label="Caller message">
+    <button id="send">Send</button><button id="newcall" class="ghost">New call</button>
+    <div class="status" id="st"></div>
+  </section>
+
+  <section aria-labelledby="h-fu">
+    <h2 id="h-fu">3. Follow-ups (simulated SMS)</h2>
+    <div id="fu">No follow-ups yet. End a call without booking.</div>
+  </section>
+
+  <section aria-labelledby="h-dash">
+    <h2 id="h-dash">4. Dashboard</h2>
+    <div id="dash"></div>
+    <button id="reset" class="ghost">Reset demo data</button>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let cfg = null, session = "call-" + Date.now();
+const api = (p, o) => fetch("/api" + p, o ? { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(o) } : {}).then(r => r.json());
+const post = (p) => fetch("/api" + p, { method:"POST" }).then(r => r.json());
+
+async function init() {
+  const t = await api("/templates");
+  $("tpl").innerHTML = t.map(x => `<option>${x}</option>`).join("");
+  refresh();
+}
+$("gen").onclick = async () => {
+  $("cfg").textContent = "Generating...";
+  cfg = await api("/config/generate", { description:$("desc").value, template:$("tpl").value });
+  $("cfg").textContent = JSON.stringify(cfg, null, 2);
+};
+$("save").onclick = async () => {
+  if (!cfg) cfg = await api("/config/generate", { description:"", template:$("tpl").value });
+  await api("/config", cfg); $("cfg").textContent = "Saved. Start a call.\n\n" + JSON.stringify(cfg, null, 2);
+};
+$("send").onclick = async () => {
+  const m = $("msg").value.trim(); if (!m) return; $("msg").value = "";
+  $("log").innerHTML += `<div class="me">${m}</div>`;
+  const r = await api("/chat", { session_id:session, message:m });
+  $("log").innerHTML += `<div class="bot">${r.reply || r.detail}</div>`;
+  $("log").scrollTop = 1e6; $("st").innerHTML = `Case ${r.case_id}: <span class="${r.status}">${r.status}</span>`;
+  refresh();
+};
+$("msg").addEventListener("keydown", e => { if (e.key === "Enter") $("send").click(); });
+$("newcall").onclick = () => { session = "call-" + Date.now(); $("log").innerHTML = ""; $("st").textContent = ""; };
+$("reset").onclick = async () => { await post("/reset"); refresh(); };
+
+async function refresh() {
+  const [fu, ins] = await Promise.all([api("/followups"), api("/insights")]);
+  $("fu").innerHTML = fu.length ? fu.map(f => `<div><b>${f.sent ? "Sent" : "Scheduled"}</b>: ${f.message}
+    ${f.sent ? `<button onclick="rec(${f.case_id})">Caller booked</button>` : `<button class="ghost" onclick="fire(${f.id})">Send now</button>`}</div>`).join("") : "No follow-ups yet. End a call without booking.";
+  $("dash").innerHTML = `<div class="num">$${ins.recovered_revenue_aud}</div>recovered revenue<br>
+    Cases: ${ins.total_cases}, booked: ${ins.booked}, needs a human: ${ins.needs_human}<br>
+    Top reasons not booked: ${ins.top_reasons_not_booked.map(r => r[0] + " (" + r[1] + ")").join(", ") || "none yet"}`;
+}
+window.fire = async id => { await post(`/followups/${id}/fire`); refresh(); };
+window.rec = async id => { await post(`/cases/${id}/recover?value_aud=220`); refresh(); };
+init();
+</script>
+</body>
+</html>

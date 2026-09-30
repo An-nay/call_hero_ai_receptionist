@@ -1,0 +1,19 @@
+{
+  "business_name": "Harbour Dental",
+  "vertical": "dental",
+  "tone": "warm, concise, Australian",
+  "open_hours": "Mon-Fri 8:00-17:00, Sat 9:00-13:00",
+  "services": [
+    {"name": "Check-up and clean", "duration_min": 45, "price_aud": 220, "quote_price_on_phone": true},
+    {"name": "Emergency appointment", "duration_min": 30, "price_aud": 180, "quote_price_on_phone": true},
+    {"name": "Teeth whitening consult", "duration_min": 30, "price_aud": 90, "quote_price_on_phone": true}
+  ],
+  "languages": ["English", "Mandarin", "Vietnamese", "Arabic"],
+  "escalation_triggers": ["severe pain", "swelling of face or jaw", "bleeding that won't stop", "knocked-out tooth", "trouble breathing or swallowing"],
+  "escalation_message": "That sounds urgent. I'm getting a member of our team to call you straight back, and if you have trouble breathing please call 000.",
+  "followups": [
+    {"delay_minutes": 10, "channel": "sms", "message": "Hi {name}, it's Harbour Dental. Happy to hold a spot for you: {link}"},
+    {"delay_minutes": 1440, "channel": "sms", "message": "Hi {name}, still keen on that check-up? Slots fill fast: {link}"}
+  ],
+  "never_do": ["give medical or diagnostic advice", "promise outcomes", "discuss other patients"]
+}
