@@ -2,6 +2,14 @@ import { useState } from 'react'
 import { buildSummary } from '../../data/buildSummary'
 import { useDashboard } from '../../state/useDashboard'
 
+function speak(text: string) {
+  if (!('speechSynthesis' in window)) return
+  speechSynthesis.cancel()
+  const utterance = new SpeechSynthesisUtterance(text)
+  utterance.rate = 0.98
+  speechSynthesis.speak(utterance)
+}
+
 export function SummaryBar() {
   const { data, actions } = useDashboard()
   const [showBrief, setShowBrief] = useState(false)
@@ -37,14 +45,23 @@ export function SummaryBar() {
             </span>
           ))}
         </div>
-        <button
-          type="button"
-          aria-expanded={showBrief}
-          onClick={() => setShowBrief((value) => !value)}
-          className="rounded-xl bg-navy px-3 py-2.5 text-xs font-extrabold text-white hover:bg-navy-2"
-        >
-          {showBrief ? 'Hide brief' : 'View 15-sec brief'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => speak(summary.brief)}
+            className="rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-extrabold hover:bg-slate-50"
+          >
+            ▶ Play brief
+          </button>
+          <button
+            type="button"
+            aria-expanded={showBrief}
+            onClick={() => setShowBrief((value) => !value)}
+            className="rounded-xl bg-navy px-3 py-2.5 text-xs font-extrabold text-white hover:bg-navy-2"
+          >
+            {showBrief ? 'Hide brief' : 'View 15-sec brief'}
+          </button>
+        </div>
       </div>
       {showBrief && (
         <p className="mt-3 border-t border-slate-200 pt-3 text-xs text-slate-500">

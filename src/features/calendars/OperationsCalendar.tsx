@@ -3,7 +3,6 @@ import { isDone } from '../../data/activity'
 import { useDashboard } from '../../state/useDashboard'
 import './calendar.css'
 import { ApptCard, BlockCard, RichText, TaskCard } from './calendarParts'
-import { type Privacy } from './privacy'
 import { EveryCaller } from './EveryCaller'
 import { buildCalendarModel } from './engine/model'
 import { highClear, plan, type DoneMap } from './engine/plan'
@@ -44,7 +43,6 @@ export function OperationsCalendar() {
   const [tab, setTab] = useState<'cal' | 'tbl'>('cal')
   const [clock, setClock] = useState<ClockState>(START)
   const [showClock, setShowClock] = useState(false)
-  const [reveal, setReveal] = useState(false)
   const [sel, setSel] = useState(0)
   const [localDone, setLocalDone] = useState<DoneMap>({})
   const [tags, setTags] = useState<Record<string, 'up' | 'dn'>>({})
@@ -148,8 +146,7 @@ export function OperationsCalendar() {
     })
   }
 
-  const privacy: Privacy = { reveal, phones: model.phones }
-  const names = Object.keys(model.phones)
+  const phones = model.phones
   const now = Math.floor(clock.min)
   const ahead = highClear(tasks, done, clock)
   const d = sel
@@ -200,11 +197,11 @@ export function OperationsCalendar() {
             <TaskCard
               key={`done-${t.id}`}
               task={t}
-              privacy={privacy}
+              phones={phones}
               doneAt={done[t.id].at}
               locked={d !== clock.day}
               onToggle={(c) => toggle(t, c)}
-              onDetails={
+              onOpen={
                 actionById.has(t.id) ? () => selectAction(t.id) : undefined
               }
             />
@@ -219,7 +216,7 @@ export function OperationsCalendar() {
           <TaskCard
             key={x.t.id}
             task={x.t}
-            privacy={privacy}
+            phones={phones}
             start={x.start}
             end={x.end}
             next={today && x.t === dayFirst}
@@ -228,7 +225,7 @@ export function OperationsCalendar() {
             moved={tags[x.t.id]}
             locked={d !== clock.day}
             onToggle={(c) => toggle(x.t, c)}
-            onDetails={
+            onOpen={
               actionById.has(x.t.id) ? () => selectAction(x.t.id) : undefined
             }
           />
@@ -321,7 +318,7 @@ export function OperationsCalendar() {
                 <ApptCard
                   key={`${a.cid}-${a.filled ? 'f' : 'o'}`}
                   appt={a}
-                  privacy={privacy}
+                  phones={phones}
                 />
               ))
             ) : (
@@ -387,19 +384,10 @@ export function OperationsCalendar() {
         >
           Every caller
         </button>
-        <span className="sp"></span>
-        <button
-          type="button"
-          className="btn"
-          aria-pressed={reveal}
-          onClick={() => setReveal((v) => !v)}
-        >
-          {reveal ? 'Hide names and numbers' : 'Show names and numbers'}
-        </button>
       </div>
 
       {tab === 'tbl' ? (
-        <EveryCaller reveal={reveal} />
+        <EveryCaller />
       ) : (
         <div className="main">
           <div className="toprow">
@@ -518,7 +506,7 @@ export function OperationsCalendar() {
               <ul>
                 {log.map((entry, i) => (
                   <li key={i} className={entry.fix ? '' : 'ok'}>
-                    <RichText text={entry.d} reveal={reveal} names={names} />
+                    <RichText text={entry.d} />
                   </li>
                 ))}
               </ul>

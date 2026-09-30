@@ -32,21 +32,6 @@ const categoryOf: Record<CatKey, ActionCategory> = {
   referral: 'referral',
 }
 
-const recommendedOf: Record<CatKey, string> = {
-  triage: 'Call now',
-  complaint: 'Call back and apologise',
-  offer: 'Offer the open slot',
-  winback: 'Offer a cancelled slot',
-  rebook: 'Call to rebook',
-  datafix: 'Call using caller ID',
-  confirm: 'Confirm the booking',
-  bookfix: 'Move the booking',
-  note: 'Add the chart note',
-  remind: 'Send the reminder',
-  release: 'Release the slot',
-  referral: 'Arrange the referral',
-}
-
 const priorityOf: Record<Priority, ActionPriority> = {
   1: 'critical',
   2: 'high',
@@ -75,7 +60,7 @@ export function buildActions(data: WeekendCallsData): ActionItem[] {
       callerName: task.who,
       title: CATS[task.cat].label,
       description: task.text,
-      recommendedAction: recommendedOf[task.cat],
+      recommendedAction: task.headline,
       priority: priorityOf[task.pri],
       category: categoryOf[task.cat],
       status: 'open' as const,

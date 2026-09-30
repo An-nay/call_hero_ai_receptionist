@@ -1,5 +1,4 @@
 import { ActionDialog } from './features/action-dialog/ActionDialog'
-import { ActionList } from './features/actions/ActionList'
 import { OperationsCalendar } from './features/calendars/OperationsCalendar'
 import { DashboardShell } from './features/shell/DashboardShell'
 import { SummaryBar } from './features/summary/SummaryBar'
@@ -11,7 +10,6 @@ export function App() {
       <DashboardShell
         summary={<SummaryBar />}
         calendar={<OperationsCalendar />}
-        actions={<ActionList />}
       />
       <ActionDialog />
     </DashboardProvider>

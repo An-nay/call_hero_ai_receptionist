@@ -716,3 +716,13 @@
     }
   }
 }
+
+.cal-root .card.task.open {
+  cursor: pointer;
+}
+.cal-root .card.task.open:hover {
+  box-shadow: 0 2px 10px rgba(20, 33, 61, 0.14);
+}
+.cal-root .ln2 .why {
+  color: var(--mute);
+}

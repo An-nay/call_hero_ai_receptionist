@@ -1,9 +1,8 @@
 import { EVERY_CALLER } from './callerTable'
 import { MoodFace } from './calendarParts'
-import { nameOf } from './privacy'
 import { MOOD } from './engine/tasks'
 
-export function EveryCaller({ reveal }: { reveal: boolean }) {
+export function EveryCaller() {
   return (
     <>
       <div className="legend">
@@ -37,7 +36,7 @@ export function EveryCaller({ reveal }: { reveal: boolean }) {
                 const [main, warn] = r[6].split(' ⚠')
                 return (
                   <tr className={`row k-${k}`} key={`${title}-${i}`}>
-                    <td className="nm">{nameOf(r[0], reveal)}</td>
+                    <td className="nm">{r[0]}</td>
                     <td className="md">
                       <MoodFace mood={r[1]} /> {MOOD[r[1]].label}
                     </td>
@@ -63,12 +62,11 @@ export function EveryCaller({ reveal }: { reveal: boolean }) {
         </table>
       </div>
       <div className="foot">
-        Clinical detail is summarised as a category on purpose. Names are
-        shortened and phone numbers masked unless revealed, because anyone at
-        the front desk can see this screen. "Urgent" means it needs action
-        today: an urgent patient or an unanswered repeat complaint. Jade's own
-        "priority" flags are re-checked by the final pass, which is why Kevin
-        Turner is "Not urgent". Weekdays follow the dates in the call data.
+        Clinical detail is summarised as a category on purpose. "Urgent" means
+        it needs action today: an urgent patient or an unanswered repeat
+        complaint. Jade's own "priority" flags are re-checked by the final pass,
+        which is why Kevin Turner is "Not urgent". Weekdays follow the dates in
+        the call data.
       </div>
     </>
   )

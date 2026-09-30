@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { getProgress, progressLabels } from '../../data/activity'
-import {
-  formatPhone,
-  isValidPhone,
-  maskPhone,
-  shortName,
-} from '../../data/format'
+import { formatPhone, isValidPhone } from '../../data/format'
 import { useDashboard } from '../../state/useDashboard'
 import type { ActionItem } from '../../types/dashboard'
 import { ActivityLog } from './ActivityLog'
@@ -16,7 +11,6 @@ import { MessagePanel } from './MessagePanel'
 
 function DialogBody({ action }: { action: ActionItem }) {
   const { data, selectAction, completeAction } = useDashboard()
-  const [revealed, setRevealed] = useState(false)
   const [tryAnyway, setTryAnyway] = useState(false)
 
   const calls = action.callIds
@@ -44,19 +38,9 @@ function DialogBody({ action }: { action: ActionItem }) {
         </div>
         <h2 className="mt-1.5 text-xl font-bold">{action.title}</h2>
         <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-          <span>
-            {revealed ? action.callerName : shortName(action.callerName)}
-          </span>
+          <span>{action.callerName}</span>
           <span aria-hidden>·</span>
-          <span>{revealed ? formatPhone(phone) : maskPhone(phone)}</span>
-          <button
-            type="button"
-            aria-pressed={revealed}
-            onClick={() => setRevealed((value) => !value)}
-            className="rounded-md border border-slate-200 px-2 py-0.5 text-[11px] font-bold hover:bg-slate-50"
-          >
-            {revealed ? 'Hide details' : 'Reveal details'}
-          </button>
+          <span>{formatPhone(phone)}</span>
         </div>
       </div>
 
@@ -101,12 +85,7 @@ function DialogBody({ action }: { action: ActionItem }) {
 
         <div className="grid gap-3 md:grid-cols-3">
           <MessagePanel action={action} canContact={canContact} />
-          <CallPanel
-            action={action}
-            phone={phone}
-            revealed={revealed}
-            canContact={canContact}
-          />
+          <CallPanel action={action} phone={phone} canContact={canContact} />
           <BookPanel action={action} />
         </div>
 

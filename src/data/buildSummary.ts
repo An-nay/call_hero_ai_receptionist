@@ -1,4 +1,4 @@
-import { dayName, shortName } from './format'
+import { dayName } from './format'
 import { getOpenings } from './activity'
 import type { WeekendCallsData } from '../types/calls'
 import type { ActionItem } from '../types/dashboard'
@@ -19,7 +19,7 @@ export function buildSummary(data: WeekendCallsData, actions: ActionItem[]) {
 
   const brief = [
     critical.length > 0
-      ? `${critical.map((item) => shortName(item.callerName)).join(' and ')} need a human first.`
+      ? `${critical.map((item) => item.callerName).join(' and ')} need a human first.`
       : 'Nothing urgent is waiting.',
     freeOpenings.length > 0
       ? `${freeOpenings.length} cancelled slot${freeOpenings.length > 1 ? 's' : ''} can be recovered.`

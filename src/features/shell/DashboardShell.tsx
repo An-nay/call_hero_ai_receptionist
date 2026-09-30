@@ -5,7 +5,6 @@ import { useDashboard } from '../../state/useDashboard'
 interface DashboardShellProps {
   summary: ReactNode
   calendar: ReactNode
-  actions: ReactNode
 }
 
 function Pill({ children }: { children: ReactNode }) {
@@ -16,11 +15,7 @@ function Pill({ children }: { children: ReactNode }) {
   )
 }
 
-export function DashboardShell({
-  summary,
-  calendar,
-  actions,
-}: DashboardShellProps) {
+export function DashboardShell({ summary, calendar }: DashboardShellProps) {
   const { data, actions: all } = useDashboard()
   const cleared = all.filter(isDone).length
 
@@ -51,10 +46,7 @@ export function DashboardShell({
           </div>
         </header>
         {summary}
-        <div className="mt-5 grid grid-cols-[minmax(0,1fr)] items-start gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.8fr)]">
-          {calendar}
-          {actions}
-        </div>
+        <div className="mt-5">{calendar}</div>
       </div>
     </main>
   )

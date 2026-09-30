@@ -6,7 +6,7 @@ import {
   type Mood,
   type Slot,
 } from './model'
-import { CLOSE, OPEN, dlabel, hhmm, hm, isOpen } from './time'
+import { CLOSE, OPEN, dlabel, hhmm, hm, isOpen, wd } from './time'
 
 export type CatKey =
   | 'triage'
@@ -60,7 +60,12 @@ export interface Task {
   pri: Priority
   /** Earliest day index the task is due. */
   due: number
+  /** Full instructions, shown in the dialog. */
   text: string
+  /** One line: what to do. */
+  headline: string
+  /** One line: why. */
+  why: string
   call: string
   min: number
   ord: number
@@ -117,6 +122,7 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
   const taken = new Set<string>()
   const claims: Record<string, string> = {}
 
+  const short = (s: Slot) => `${wd(s.day)} ${s.time} with ${s.prac}`
   const slotTxt = (s: Slot) => `${dlabel(s.day)} ${s.time} with ${s.prac}`
   const key = (s: Slot) => `${s.day}|${s.time}|${s.prac}`
   const free = freed
@@ -148,6 +154,8 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
     pri: Priority,
     due: number,
     text: string,
+    headline: string,
+    why: string,
     extra: Partial<Task> = {},
   ) =>
     out.push({
@@ -158,6 +166,8 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
       pri,
       due,
       text,
+      headline,
+      why,
       call: ids(who),
       ...extra,
     })
@@ -217,6 +227,10 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
       1,
       0,
       `Urgent overnight call and nobody has rung back yet. ${say(n, f, b)}`,
+      f
+        ? `Offer ${short(f)}${b ? ` or ${short(b)}` : ''}`
+        : 'Check the diary for the earliest slot',
+      'Urgent overnight call, nobody has rung back',
     )
     fixes.push(
       `<b>${n}</b> had an urgent call but was never booked. First in line for ${f ? slotTxt(f) : 'the earliest slot (none known, check the diary)'}.`,
@@ -240,6 +254,8 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
       down ? 3 : 1,
       0,
       `Confirm ${dlabel(b.day)} ${b.time} with ${b.prac}.${down ? " The final pass removed Jade's priority flag: nothing in the call suggests urgency, and the urgent call outranks it." : ''}`,
+      `Confirm ${wd(b.day)} ${b.time} with ${b.prac}`,
+      down ? 'Priority flag removed, not urgent' : 'Booking to confirm',
       { exp: slotAbs(b) },
     )
     if (down)
@@ -280,6 +296,10 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
             : cand.length
               ? `Every open slot in that window is already offered to someone else (${cand.map(slotTxt).join(', ')}). Add them to the waitlist and check the diary.`
               : 'No free slot is known in that window. Add them to the waitlist and check the diary.'),
+        f
+          ? `Offer ${short(first!)}${b ? ` or ${short(b)}` : ''}`
+          : 'Add to the waitlist',
+        `Wants ${w.label}`,
         { offer: first },
       )
     } else {
@@ -294,6 +314,10 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
           (f
             ? `Offer ${slotTxt(first!)}${tag(f, n)} if they still want an earlier slot.`
             : 'The earlier openings are already offered to others.'),
+        f
+          ? `Apologise, confirm, offer ${short(first!)}`
+          : 'Apologise and confirm the booking',
+        `Asked ${callsOf(n).length}x for ${w.label}, booked ${wd(me.day)} ${me.time}`,
         { offer: first },
       )
     }
@@ -324,6 +348,10 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
         closed ? 2 : 4,
         0,
         `Booked ${dlabel(a.day)} ${a.time}, ${closed ? 'a day the clinic is closed' : 'right at closing time'}. ${say(a.who, x, y)}`,
+        x
+          ? `Move to ${short(x)}${y ? ` or ${short(y)}` : ''}`
+          : 'Find another time',
+        `Booked ${wd(a.day)} ${a.time}, ${closed ? 'clinic closed' : 'at closing time'}`,
       )
       fixes.push(
         `<b>${a.who}</b> was booked ${closed ? 'on a closed day' : 'at closing time'} (${dlabel(a.day)} ${a.time}). Two alternatives ready${closed ? '' : ', low priority'}.`,
@@ -372,6 +400,10 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
         due,
         `Cancelled ${dlabel(a.day)} ${a.time} and wants to rebook${due ? ', and asked for a call next week' : ''}. ` +
           (orig ? t.replace('Offer ', 'Offer their original slot, ') : t),
+        f
+          ? `Offer ${orig ? 'their original slot, ' : ''}${short(f)}`
+          : 'Call to rebook',
+        `Cancelled ${wd(a.day)} ${a.time}${due ? ', asked for a call next week' : ''}`,
         { offer: f && !f.derived ? f : undefined },
       )
       fixes.push(
@@ -392,6 +424,8 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
         4,
         0,
         `Jade told ${first} the practice would call back with a referral, but the clinic doesn't offer this. Later today, ring a local specialist clinic, ask if they take referrals, and ask them to call ${first} back.`,
+        'Ring a specialist clinic and ask them to call back',
+        'Referral promised, clinic does not offer this',
         { after: 14 * 60 },
       )
       fixes.push(
@@ -412,6 +446,8 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
       1,
       0,
       `Call back about the invoice dispute. ${callsOf(n).length} calls so far and no callback since Friday evening. Apologise first and say when they will hear back.`,
+      'Apologise first, say when they will hear back',
+      `${callsOf(n).length} calls, no callback since Friday`,
     ),
   )
   calls
@@ -425,6 +461,8 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
         2,
         0,
         'The callback number Jade captured is too short and was never read back. Call or text the number they rang from, confirm it, and book their first visit.',
+        'Call the number they rang from and book their visit',
+        'Callback number was a digit short',
       )
     })
   calls
@@ -440,6 +478,8 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
         3,
         0,
         `Add the practitioner note to their chart before ${dlabel(b.day)} ${b.time} with ${b.prac}.`,
+        `Add the note to their chart before ${wd(b.day)} ${b.time}`,
+        'Note for the practitioner',
       )
     })
   booked
@@ -452,6 +492,8 @@ export function buildTasks(model: CalendarModel, nowAbs: number) {
         4,
         prevOpen(a.day),
         `Send a reminder for ${a.time} ${a.type} on ${dlabel(a.day)} (${a.prac}).`,
+        `Send reminder for ${wd(a.day)} ${a.time}`,
+        a.type,
         { call: '', exp: slotAbs(a) },
       ),
     )

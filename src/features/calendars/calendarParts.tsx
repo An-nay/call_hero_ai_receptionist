@@ -1,11 +1,7 @@
 import type { ReactNode } from 'react'
-import { shortName } from '../../data/format'
-import { nameOf, type Privacy } from './privacy'
-import type { Appt } from './engine/model'
+import type { Appt, Block, Mood } from './engine/model'
 import { CATS, MOOD, PRI, type Task } from './engine/tasks'
 import { dlabel, fmt } from './engine/time'
-import type { Mood } from './engine/model'
-import type { Block } from './engine/model'
 
 export function MoodFace({ mood }: { mood: Mood }) {
   const m = MOOD[mood]
@@ -16,22 +12,11 @@ export function MoodFace({ mood }: { mood: Mood }) {
   )
 }
 
-/** Renders "<b>name</b>" markers without injecting HTML, masking names unless revealed. */
-export function RichText({
-  text,
-  reveal,
-  names,
-}: {
-  text: string
-  reveal: boolean
-  names: string[]
-}) {
-  let out = text
-  if (!reveal)
-    for (const name of names) out = out.split(name).join(shortName(name))
+/** Renders "<b>name</b>" markers without injecting HTML. */
+export function RichText({ text }: { text: string }) {
   return (
     <>
-      {out
+      {text
         .split(/(<b>.*?<\/b>)/g)
         .map((part, i) =>
           part.startsWith('<b>') ? <b key={i}>{part.slice(3, -4)}</b> : part,
@@ -40,27 +25,25 @@ export function RichText({
   )
 }
 
-function Tel({ who, privacy }: { who: string; privacy: Privacy }) {
-  const phone = privacy.phones[who]
+function Tel({ who, phones }: { who: string; phones: Record<string, string> }) {
+  const phone = phones[who]
   if (!phone) return null
   const local = '0' + phone.slice(3)
-  const label = privacy.reveal
-    ? `${local.slice(0, 4)} ${local.slice(4, 7)} ${local.slice(7)}`
-    : `•••• ••• ${local.slice(7)}`
   return (
     <a
       className="tel"
       href={`tel:${phone}`}
-      title={`Call ${nameOf(who, privacy.reveal)}`}
+      title={`Call ${who}`}
+      onClick={(event) => event.stopPropagation()}
     >
-      📞 {label}
+      📞 {local.slice(0, 4)} {local.slice(4, 7)} {local.slice(7)}
     </a>
   )
 }
 
 export function TaskCard({
   task,
-  privacy,
+  phones,
   start,
   end,
   doneAt,
@@ -70,10 +53,10 @@ export function TaskCard({
   moved,
   locked,
   onToggle,
-  onDetails,
+  onOpen,
 }: {
   task: Task
-  privacy: Privacy
+  phones: Record<string, string>
   start?: number
   end?: number
   doneAt?: number
@@ -83,31 +66,42 @@ export function TaskCard({
   moved?: 'up' | 'dn'
   locked?: boolean
   onToggle: (checked: boolean) => void
-  onDetails?: () => void
+  onOpen?: () => void
 }) {
   const c = PRI[task.pri]
   const cat = CATS[task.cat]
   const done = doneAt !== undefined
-  const who = nameOf(task.who, privacy.reveal)
   return (
     <div
-      className={`card task k-${c.k}${done ? ' isdone' : ''}${next ? ' next' : ''}${moved && !done ? ' flash' : ''}`}
+      className={`card task k-${c.k}${done ? ' isdone' : ''}${next ? ' next' : ''}${moved && !done ? ' flash' : ''}${onOpen ? ' open' : ''}`}
+      role={onOpen ? 'button' : undefined}
+      tabIndex={onOpen ? 0 : undefined}
+      aria-label={onOpen ? `Open ${task.who}: ${task.headline}` : undefined}
+      onClick={onOpen}
+      onKeyDown={(event) => {
+        if (
+          onOpen &&
+          event.target === event.currentTarget &&
+          event.key === 'Enter'
+        )
+          onOpen()
+      }}
     >
-      <label className="cb">
+      <label className="cb" onClick={(event) => event.stopPropagation()}>
         <input
           type="checkbox"
           checked={done}
           disabled={locked}
           onChange={(e) => onToggle(e.target.checked)}
-          aria-label={`Mark done: ${who}, ${cat.label}`}
+          aria-label={`Mark done: ${task.who}, ${cat.label}`}
         />
         <span className="box"></span>
       </label>
       <span className="tx">
         <span className="ln1">
-          <b>{who}</b> <MoodFace mood={task.mood} />{' '}
+          <b>{task.who}</b> <MoodFace mood={task.mood} />{' '}
           <span className="pill p">{c.name}</span>{' '}
-          <Tel who={task.who} privacy={privacy} />
+          <Tel who={task.who} phones={phones} />
           {next && <span className="tag">next</span>}
           {moved && !done && (
             <span className={`tag ${moved === 'up' ? 'up' : 'dn'}`}>
@@ -120,33 +114,35 @@ export function TaskCard({
             </span>
           )}
           {optional && <span className="tag carry">if she has time</span>}
-          {onDetails && (
-            <button type="button" className="btn" onClick={onDetails}>
-              Details
-            </button>
-          )}
         </span>
-        <span className="ln2">{task.text}</span>
+        <span className="ln2">
+          <b>{task.headline}</b>
+          {task.why && <span className="why"> · {task.why}</span>}
+        </span>
         <span className="ln3">
           <span className="time">
             {done ? `done ${fmt(doneAt)}` : `${fmt(start!)}–${fmt(end!)}`}
           </span>{' '}
           · {cat.label} · {task.min} min
-          {task.call ? ` · call ${task.call}` : ''}
         </span>
       </span>
     </div>
   )
 }
 
-export function ApptCard({ appt, privacy }: { appt: Appt; privacy: Privacy }) {
+export function ApptCard({
+  appt,
+  phones,
+}: {
+  appt: Appt
+  phones: Record<string, string>
+}) {
   const showMood = appt.mood !== 'casual' && !appt.cancelled
   return (
     <div className={`card appt k-g${appt.cancelled ? ' cancelled' : ''}`}>
       <span className="tx">
         <span className="ln1">
-          <b>{nameOf(appt.who, privacy.reveal)}</b>{' '}
-          {showMood && <MoodFace mood={appt.mood} />}
+          <b>{appt.who}</b> {showMood && <MoodFace mood={appt.mood} />}
           {appt.cancelled ? (
             <span className="tag carry">cancelled, slot free</span>
           ) : (
@@ -154,7 +150,7 @@ export function ApptCard({ appt, privacy }: { appt: Appt; privacy: Privacy }) {
               {appt.filled ? 'Booked today' : 'Booking'}
             </span>
           )}{' '}
-          <Tel who={appt.who} privacy={privacy} />
+          <Tel who={appt.who} phones={phones} />
           {appt.warn && <span className="warn">⚠ {appt.warn}</span>}
         </span>
         <span className="ln3">

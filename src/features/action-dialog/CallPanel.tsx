@@ -1,17 +1,15 @@
 import { useState } from 'react'
-import { firstName, formatPhone, maskPhone } from '../../data/format'
+import { firstName, formatPhone } from '../../data/format'
 import { useDashboard } from '../../state/useDashboard'
 import type { ActionItem } from '../../types/dashboard'
 
 export function CallPanel({
   action,
   phone,
-  revealed,
   canContact,
 }: {
   action: ActionItem
   phone: string
-  revealed: boolean
   canContact: boolean
 }) {
   const { logActivity } = useDashboard()
@@ -21,9 +19,7 @@ export function CallPanel({
   return (
     <section className="rounded-xl border border-slate-200 p-3.5">
       <h3 className="text-xs font-bold">📞 Call</h3>
-      <p className="mt-0.5 text-[11px] text-slate-500">
-        {revealed ? formatPhone(phone) : maskPhone(phone)}
-      </p>
+      <p className="mt-0.5 text-[11px] text-slate-500">{formatPhone(phone)}</p>
       <a
         href={canContact ? `tel:${phone}` : undefined}
         aria-disabled={!canContact}
